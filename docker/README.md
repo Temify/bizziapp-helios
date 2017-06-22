@@ -12,19 +12,27 @@ Files for building docker image with working Apache 2, PHP 7.0 and phpunit@lates
 
 ## Usage
 
-Running web server:
+### Running web server:
 
 `sudo docker run -d --name heliosapi-web -v $PWD:/myApp:rw -v $PWD/apache2.conf:/etc/apache2/sites-enabled/000-default.conf -v $PWD:/var/www/html -p 8080:80 michal/php/heliosapi:php7.0 /usr/sbin/apache2ctl -D FOREGROUND`
 
+Server is accessible on http://localhost:8080
 
-For running phpunit tests:
+### Running phpunit tests:
 
-<!--`sudo docker run -ti -v $PWD:/myApp:rw -p 8080:80 michal/php/heliosapi:php7.0 phpunit`-->
+`sudo docker run -ti -v $PWD:/myApp:rw michal/php/heliosapi:php7.0 phpunit tests/.`
+
+### Running composer install
+
+`sudo docker run -ti -v $PWD:/myApp:rw michal/php/heliosapi:php7.0 composer install`
 
 ## History
 
 19.6.2017 - 'docker' folder and docker files created
+
 21.6.2017 - added README.md
+
+22.6.2017 - added Usage
 
 ## Credits
 

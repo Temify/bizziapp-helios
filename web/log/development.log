@@ -1,0 +1,3 @@
+[2017-06-22 13:15:39] app.INFO: Matched route "{route}". {"route":"GET_heliosapi_zbozi","route_parameters":{"_controller":"[object] (Closure: {})","_route":"GET_heliosapi_zbozi"},"request_uri":"http://localhost/heliosapi/zbozi","method":"GET"} []
+[2017-06-22 13:15:39] app.DEBUG: > GET /heliosapi/zbozi [] []
+[2017-06-22 13:15:43] app.DEBUG: < 200 [] []
