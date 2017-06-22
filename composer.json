@@ -1,0 +1,19 @@
+{
+    "require": {
+        "silex/silex": "~2.0",
+        "monolog/monolog": "^1.22",
+        "lcobucci/jwt": "3.2.1",
+        "doctrine/dbal": "~2.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "HeliosAPI\\": "web/",
+            "HeliosAPI\\Types\\": "web/",
+            "HeliosAPI\\Tests\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "symfony/browser-kit": "^3.3",
+        "symfony/css-selector": "^3.3"
+    }
+}

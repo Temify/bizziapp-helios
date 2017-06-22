@@ -1,0 +1,10 @@
+version: '3'
+services:
+  HeliosAPI:
+    container_name: heliosapi
+    build: .
+    image: michal/php/heliosapi:php7.0
+    ports:
+     - "8080:80"
+    volumes:
+     - ./../:/myApp:rw

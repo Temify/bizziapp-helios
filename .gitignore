@@ -1,0 +1,16 @@
+/vendor/
+
+#Visual Studio Code files
+.vscode/
+
+#PHPUnit test files
+phpunit.xml.dist/
+
+# exclude everything
+log/*
+
+# exception to the rule
+!log/.gitkeep 
+
+#coposer
+composer.phar
