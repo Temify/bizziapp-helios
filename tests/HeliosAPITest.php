@@ -74,22 +74,74 @@ class HeliosAPITests extends WebTestCase
 		$this->assertTrue(isset($responseData->totalrows) && is_numeric($responseData->totalrows) && isset($responseData->rows) && is_array($responseData->rows), 'Result part sent.');
     }
 
+    public function testClientsId_success ()
+    {
+        $data = [];
+        $clientId = 4;
 
-    // public function testClientlist_success () {}
+        $authService = new \HeliosAPI\AuthService($this->_signKey);
+        $token = $authService->GetNewToken($this->_issuer, $this->_audience, $this->_id, $this->_expiration, new \stdClass());
 
-    // public function testClientlist_failure () {}
+        $client = $this->createClient();
+        $crawler = $client->request('GET', 'heliosapi/clients/'.$clientId, $data, array(), $this->GetHeaders($token));
 
-    // public function testClientdetail_success () {}
+        // Assert that the response status code is 2xx
+        $this->assertTrue($client->getResponse()->isSuccessful(), 'response status is 2xx');
+        // Assert that the "Content-Type" header is "application/json"
+        $this->assertTrue($client->getResponse()->headers->contains('Content-Type', 'application/json'),'the "Content-Type" header is "application/json"');
+        $this->assertTrue($client->getResponse()->isOk());
+        // Assert data
+        $responseData = json_decode($client->getResponse()->getContent());
+		$this->assertTrue(isset($responseData->id) && is_numeric($responseData->id) && isset($responseData->orgnum) && is_numeric($responseData->orgnum), 'Result part sent.');
+    }
 
-    // public function testClientdetail_failure () {}
+    public function testProducts_success ()
+    {
+        $data = [
+            'name' => 'a',
+            'centernumber' => null,
+            'regnumber' => 1,
+            'listfrom' => 10,
+            'listto' => 20,
+            'sort' => 'namedesc'
+        ];
 
-    // public function testProductlist_success () {}
+        $authService = new \HeliosAPI\AuthService($this->_signKey);
+        $token = $authService->GetNewToken($this->_issuer, $this->_audience, $this->_id, $this->_expiration, new \stdClass());
+
+        $client = $this->createClient();
+        $crawler = $client->request('GET', 'heliosapi/products', $data, array(), $this->GetHeaders($token));
+
+        // Assert that the response status code is 2xx
+        $this->assertTrue($client->getResponse()->isSuccessful(), 'response status is 2xx');
+        // Assert that the "Content-Type" header is "application/json"
+        $this->assertTrue($client->getResponse()->headers->contains('Content-Type', 'application/json'),'the "Content-Type" header is "application/json"');
+        $this->assertTrue($client->getResponse()->isOk());
+        // Assert data
+        $responseData = json_decode($client->getResponse()->getContent());
+		$this->assertTrue(isset($responseData->totalrows) && is_numeric($responseData->totalrows) && isset($responseData->rows) && is_array($responseData->rows), 'Result part sent.');  
+    }
     
-    // public function testProductlist_failure () {}
+    public function testProductsId_success ()
+    {
+        $data = [];
+        $productId = 4;
 
-    // public function testProductdetail_success () {}
+        $authService = new \HeliosAPI\AuthService($this->_signKey);
+        $token = $authService->GetNewToken($this->_issuer, $this->_audience, $this->_id, $this->_expiration, new \stdClass());
+
+        $client = $this->createClient();
+        $crawler = $client->request('GET', 'heliosapi/products/'.$productId, $data, array(), $this->GetHeaders($token));
+
+        // Assert that the response status code is 2xx
+        $this->assertTrue($client->getResponse()->isSuccessful(), 'response status is 2xx');
+        // Assert that the "Content-Type" header is "application/json"
+        $this->assertTrue($client->getResponse()->headers->contains('Content-Type', 'application/json'),'the "Content-Type" header is "application/json"');
+        $this->assertTrue($client->getResponse()->isOk());
+        // Assert data
+        $responseData = json_decode($client->getResponse()->getContent());
+		$this->assertTrue(isset($responseData->id) && is_numeric($responseData->id) && isset($responseData->regnum) && strlen($responseData->regnum) <= 30, 'Result part sent.');
+    }
     
-    // public function testProductdetail_failure () {}
-
 }
 ?>

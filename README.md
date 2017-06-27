@@ -1,10 +1,14 @@
-# bizziapp-helios
+# HeliosAPI
 
-## API
+## Usage
+Every API call from client must have JWT token in 'Authorization' header.
+JWT token must be signed by same signature which is known to server and client (can be found at index.php in variable $app['signingkey']).
+
+## API methods
 
 ### List of clients
 
-Url: <server>/clients
+Url: \<server\>/heliosapi/clients
 
 Method: GET
 
@@ -40,7 +44,7 @@ Output parameters:
 
 ### Detail of client
 
-Url:<server>/clients/\<id\>
+Url:\<server\>/heliosapi/clients/\<id\>
 
 Method: GET
 
@@ -52,35 +56,31 @@ id: <client id>
 Output parameters:
 ```
 { 
-    rows: {
-        Array {
-            id: <id> [TabCisOrg.ID],
-            orgnum: <organisation number> [TabCisOrg.CisloOrg],
-            parentid: <parent client id> [TabCisOrg.NadrizenaOrg],
-            name: <name> [TabCisOrg.Nazev],
-            name2: <second name> [TabCisOrg.DruhyNazev],
-            email: <email> [],
-            phone: <phone number> [],
-            address: {
-                street: <street> [TabCisOrg.Ulice],
-                streetorinumber: <orientation number> [TabCisOrg.OrCislo],
-                streetdesnumber: <descriptive number> [TabCisOrg.PopCislo],
-                city: <city> [TabCisOrg.Misto],
-                zip: <zip code> [TabCisOrg.PSC]
-            },
-            contact: <contact>  [TabCisOrg.Kontakt],
-            ic: <ic number> [TabCisOrg.ICO],
-            dic: <dic number> [TabCisOrg.DIC],
-            web: <web URL> [],
-            status: <status 0 - 3> [TabCisOrg.Stav]
-        }
-    }
+    id: <id> [TabCisOrg.ID],
+    orgnum: <organisation number> [TabCisOrg.CisloOrg],
+    parentid: <parent client id> [TabCisOrg.NadrizenaOrg],
+    name: <name> [TabCisOrg.Nazev],
+    name2: <second name> [TabCisOrg.DruhyNazev],
+    email: <email> [],
+    phone: <phone number> [],
+    address: {
+        street: <street> [TabCisOrg.Ulice],
+        streetorinumber: <orientation number> [TabCisOrg.OrCislo],
+        streetdesnumber: <descriptive number> [TabCisOrg.PopCislo],
+        city: <city> [TabCisOrg.Misto],
+        zip: <zip code> [TabCisOrg.PSC]
+    },
+    contact: <contact>  [TabCisOrg.Kontakt],
+    ic: <ic number> [TabCisOrg.ICO],
+    dic: <dic number> [TabCisOrg.DIC],
+    web: <web URL> [],
+    status: <status 0 - 3> [TabCisOrg.Stav]
 }
 ```
 
 ### Create new client
 
-Url:<server>/clients
+Url:\<server\>/heliosapi/clients
 
 Method: POST
 
@@ -132,24 +132,20 @@ Output parameters:
 }
 ```
 
-### productlist
+### List of products
 
-Url:<server>/productlist
+Url:\<server\>/heliosapi/products
 
 Method: GET
 
 Input parameters:
 ```
-{
-    filter: {
-        name: <product name> [TabKmenZbozi.Nazev1 OR TabKmenZbozi.Nazev2 OR TabKmenZbozi.Nazev3 OR TabKmenZbozi.Nazev3 OR TabKmenZbozi.Nazev4],
-        centernumber: <center number> [TabKmenZbozi.KmenoveStredisko],
-        regnumber: <registration number> [KmenoveStredisko.RegCis],
-        listfrom: {optional} <position from complete list where result begins>,
-        listto: {optional} <position from complete list where result ends>,
-        sort: {optional} <by which should be ordered> ('nameasc', 'namedesc') [TabKmenZbozi.Nazev1]
-    }
-}
+name: <product name> [TabKmenZbozi.Nazev1 OR TabKmenZbozi.Nazev2 OR TabKmenZbozi.Nazev3 OR TabKmenZbozi.Nazev3 OR TabKmenZbozi.Nazev4],
+centernumber: <center number> [TabKmenZbozi.KmenoveStredisko],
+regnumber: <registration number> [KmenoveStredisko.RegCis],
+listfrom: {optional} <position from complete list where result begins>,
+listto: {optional} <position from complete list where result ends>,
+sort: {optional} <by which should be ordered> ('nameasc', 'namedesc') [TabKmenZbozi.Nazev1]
 ```
 
 Output parameters:
@@ -170,49 +166,43 @@ Output parameters:
 }
 ```
 
-### productdetail
+### Detail of product
 
-Url:<server>/productdetail
+Url:\<server\>/heliosapi/products/\<product id\>
 
 Method: GET
 
 Input parameters:
 ```
-{
-    id: <product id> [TabKmenZbozi.ID]
-}
+id: <product id> [TabKmenZbozi.ID]
 ```
 
 Output parameters:
 ```
-{ 
-    rows: {
-        Array {
-            id: <id> [TabKmenZbozi.ID],
-            group: <group id> [TabKmenZbozi.SkupZbo],
-            regnum: <registration number> [TabKmenZbozi.RegCis],
-            name: <name> [TabKmenZbozi.Nazev1],
-            name2: <second name> [TabKmenZbozi.Nazev2],
-            name3: <third name> [TabKmenZbozi.Nazev3],
-            name4: <fourth name> [TabKmenZbozi.Nazev4],
-            skp: <id> [TabKmenZbozi.SKP],
-            range: <range of goods> [TabKmenZbozi.IdSortiment],
-            vintage: <vintage> [],
-            notice: <notice> [TabKmenZbozi.Upozorneni],
-            note: <note> [TabKmenZbozi.Poznamka],
-            muevidence: <measurement unit of evidence> [TabKmenZbozi.MJEvidence],
-            mustocktaking: <measurement unit of stock-taking> [TabKmenZbozi.MJInventura],
-            muinput: <measurement unit of input> [TabKmenZbozi.MJVstup],
-            muoutput: <measurement unit of output> [TabKmenZbozi.MJVystup],
-            vatinput: <vat input> [TabKmenZbozi.SazbaDPHVstup],
-            vatoutput: <vat output> [TabKmenZbozi.SazbaDPHVystup],
-            pdpcode: <PDP code> [TabKmenZbozi.IDKodPDP],
-            edinput: <excise duty input> [TabKmenZbozi.SazbaSDVstup],
-            edoutput: <excise duty output> [TabKmenZbozi.SazbaSDVystup],
-            mued: <measurement unit of excise duty> [TabKmenZbozi.MJSD],
-            edcode: <excise duty code> [TabKmenZbozi.KodSD],
-            edcalc: <excise duty calculation> [TabKmenZbozi.PrepocetMJSD]
-        }
-    }
+{
+    id: <id> [TabKmenZbozi.ID],
+    group: <group id> [TabKmenZbozi.SkupZbo],
+    regnum: <registration number> [TabKmenZbozi.RegCis],
+    name: <name> [TabKmenZbozi.Nazev1],
+    name2: <second name> [TabKmenZbozi.Nazev2],
+    name3: <third name> [TabKmenZbozi.Nazev3],
+    name4: <fourth name> [TabKmenZbozi.Nazev4],
+    skp: <id> [TabKmenZbozi.SKP],
+    range: <range of goods> [TabKmenZbozi.IdSortiment],
+    vintage: <vintage> [],
+    notice: <notice> [TabKmenZbozi.Upozorneni],
+    note: <note> [TabKmenZbozi.Poznamka],
+    muevidence: <measurement unit of evidence> [TabKmenZbozi.MJEvidence],
+    mustocktaking: <measurement unit of stock-taking> [TabKmenZbozi.MJInventura],
+    muinput: <measurement unit of input> [TabKmenZbozi.MJVstup],
+    muoutput: <measurement unit of output> [TabKmenZbozi.MJVystup],
+    vatinput: <vat input> [TabKmenZbozi.SazbaDPHVstup],
+    vatoutput: <vat output> [TabKmenZbozi.SazbaDPHVystup],
+    pdpcode: <PDP code> [TabKmenZbozi.IDKodPDP],
+    edinput: <excise duty input> [TabKmenZbozi.SazbaSDVstup],
+    edoutput: <excise duty output> [TabKmenZbozi.SazbaSDVystup],
+    mued: <measurement unit of excise duty> [TabKmenZbozi.MJSD],
+    edcode: <excise duty code> [TabKmenZbozi.KodSD],
+    edcalc: <excise duty calculation> [TabKmenZbozi.PrepocetMJSD]
 }
 ```

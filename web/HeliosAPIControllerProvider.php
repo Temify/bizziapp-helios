@@ -103,30 +103,32 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->phone = '';
                 $newRow->contact = $row['Kontakt'];
                 $newRow->web = '';
-                $newRow->state = $row['Stav'];
+                $newRow->status = $row['Stav'];
                 $result->rows[] = $newRow;
             }
 
             //Construct response
 	        $app['monolog']->info('Response: data:'.json_encode($result));
             return $app->json($result);
-
         });
         
         // Get detail of client
         $controllers->get('/clients/{id}', function (Application $app, $id) 
-        {            
+        {
+            $result = new \stdClass();
+            $request = $app['request_stack']->getCurrentRequest();
+
             $qb = $app['db']->createQueryBuilder();
             $sqlParams = Array();
 
-            $qd->from('TabCisOrg');
+            $qb->from('TabCisOrg');
             
             // Name
             $qb->andWhere('TabCisOrg.ID = ?');
             $sqlParams[] = $id;
 
             // Get data
-            $qd->select(
+            $qb->select(
                         'TabCisOrg.ID',
                         'TabCisOrg.CisloOrg' ,
                         'TabCisOrg.NadrizenaOrg',
@@ -167,8 +169,8 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->ic = '';
                 $newRow->dic = '';
                 $newRow->web = '';
-                $newRow->state = $row['Stav'];
-                $result->rows[] = $newRow;
+                $newRow->status = $row['Stav'];
+                $result = $newRow;
             }
 
             //Construct response
@@ -290,37 +292,40 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
 
         // Get list of products
         $controllers->get('/products', function (Application $app) 
-        {            
+        {
+            $result = new \stdClass();
+            $request = $app['request_stack']->getCurrentRequest();
+
             $qb = $app['db']->createQueryBuilder();
             $sqlParams = Array();
 
-            $qd->from('TabKmenZbozi');
+            $qb->from('TabKmenZbozi');
             
             // Name
-            if(!empty($requestData.filter.name))
+            if(!empty($request->get('name')))
             {
                 $qb->andWhere('TabKmenZbozi.Nazev1 LIKE ?');
-                $sqlParams[] = $requestData.filter.name;
+                $sqlParams[] = '%'.$request->get('name').'%';
                 $qb->orWhere('TabKmenZbozi.Nazev2 LIKE ?');
-                $sqlParams[] = $requestData.filter.name;
+                $sqlParams[] = '%'.$request->get('name').'%';
                 $qb->orWhere('TabKmenZbozi.Nazev3 LIKE ?');
-                $sqlParams[] = $requestData.filter.name;
+                $sqlParams[] = '%'.$request->get('name').'%';
                 $qb->orWhere('TabKmenZbozi.Nazev4 LIKE ?');
-                $sqlParams[] = $requestData.filter.name;
+                $sqlParams[] = '%'.$request->get('name').'%';
             }
 
             // Center
-            if(!empty($requestData.filter.centernumber))
+            if(!empty($request->get('centernumber')))
             {
                 $qb->andWhere('TabKmenZbozi.KmenoveStredisko LIKE ?');
-                $sqlParams[] = $requestData.filter.centernumber;
+                $sqlParams[] = '%'.$request->get('centernumber').'%';
             }
 
             // Registration number
-            if(!empty($requestData.filter.regnumber))
+            if(!empty($request->get('regnumber')))
             {
                 $qb->andWhere('TabKmenZbozi.RegCis LIKE ?');
-                $sqlParams[] = $requestData.filter.regnumber;
+                $sqlParams[] = '%'.$request->get('regnumber').'%';
             }
 
             // Get total rows count
@@ -331,7 +336,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             $result->totalrows = $totalRows[0]['totalcount'];
 
             // Get part of lits
-            $qd->select(
+            $qb->select(
                         'TabKmenZbozi.ID', 
                         'TabKmenZbozi.RegCis', 
                         'TabKmenZbozi.SkupZbo',
@@ -343,17 +348,17 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                         );
 
             // Limit from
-            if(!empty($requestData.filter.listfrom))
-                $qb->setFirstResult($requestData.filter.listfrom);
+            if(!empty($request->get('listfrom')))
+                $qb->setFirstResult($request->get('listfrom'));
             
             // Limit to
-            if(!empty($requestData.filter.listto))
-                $qb->setMaxResults($requestData.filter.listto);
+            if(!empty($request->get('listto')))
+                $qb->setMaxResults($request->get('listto'));
 
 			// Sort
-			if(!empty($requestData.filter.sort))
+			if(!empty($request->get('sort')))
 			{
-				switch($sortby)
+				switch($request->get('sort'))
 				{
 					case 'nameasc':
 					{
@@ -388,27 +393,32 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->name2 = $row['Nazev2'];
                 $newRow->name3 = $row['Nazev3'];
                 $newRow->name4 = $row['Nazev4'];
-                $newRow->skp = $row['Kontakt'];
+                $newRow->skp = $row['SKP'];
                 $result->rows[] = $newRow;
             }
 
-            return $result;
+            //Construct response
+	        $app['monolog']->info('Response: data:'.json_encode($result));
+            return $app->json($result);
         });
 
         // Get detail of product
         $controllers->get('/products/{id}', function (Application $app, $id) 
-        {   
+        {
+            $result = new \stdClass();
+            $request = $app['request_stack']->getCurrentRequest();   
+
             $qb = $app['db']->createQueryBuilder();
             $sqlParams = Array();
 
-            $qd->from('TabKmenZbozi');
+            $qb->from('TabKmenZbozi');
             
             // Name
             $qb->andWhere('TabKmenZbozi.ID = ?');
             $sqlParams[] = $id;
 
             // Get data
-            $qd->select(
+            $qb->select(
                         'TabKmenZbozi.ID',
                         'TabKmenZbozi.SkupZbo' ,
                         'TabKmenZbozi.RegCis',
@@ -458,17 +468,19 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->muinput = $row['MJVstup'];
                 $newRow->muoutput = $row['MJVystup'];
                 $newRow->vatinput = $row['SazbaDPHVstup'];
-                $newRow->vatoutput = $row['StSazbaDPHVystupav'];
+                $newRow->vatoutput = $row['SazbaDPHVystup'];
                 $newRow->pdpcode = $row['IDKodPDP'];
                 $newRow->edinput = $row['SazbaSDVstup'];
                 $newRow->edoutput = $row['SazbaSDVystup'];
                 $newRow->mued = $row['MJSD'];
                 $newRow->edcode = $row['KodSD'];
                 $newRow->edcalc = $row['PrepocetMJSD'];
-                $result->rows[] = $newRow;
+                $result = $newRow;
             }
 
-            return $result;
+            //Construct response
+	        $app['monolog']->info('Response: data:'.json_encode($result));
+            return $app->json($result);
         });
         return $controllers;
     }

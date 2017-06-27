@@ -8,6 +8,7 @@ phpunit.xml.dist/
 
 # exclude everything
 log/*
+*.log
 
 # exception to the rule
 !log/.gitkeep 
