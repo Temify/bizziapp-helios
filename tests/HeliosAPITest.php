@@ -21,6 +21,7 @@ class HeliosAPITests extends WebTestCase
         $app = require __DIR__ . "/../web/index.php";
         // $app['debug'] = true;
         unset($app['exception_handler']);
+        $this->_signKey = $app['signingkey'];
         return $app;
     }
 
@@ -28,7 +29,6 @@ class HeliosAPITests extends WebTestCase
     {
         parent::setUp();
 
-        $this->_signKey = 'testsignkey';
         $this->_issuer = 'issuer';
         $this->_audience = 'audience';
         $this->_id = uniqid();
@@ -48,20 +48,48 @@ class HeliosAPITests extends WebTestCase
         return $headers;
     }
     
-    public function testZbozi_success ()
+    public function testClients_success ()
     {
-        $data = new \stdClass();
-        $data->ID = 4;
+        $data = [
+                    'name' => 'a',
+                    'status' => 0,
+                    'listfrom' => 10,
+                    'listto' => 20,
+                    'sort' => 'namedesc'
+                ];
 
         $authService = new \HeliosAPI\AuthService($this->_signKey);
-        $token = $authService->GetNewToken($this->_issuer, $this->_audience, $this->_id, $this->_expiration, $data);
+        $token = $authService->GetNewToken($this->_issuer, $this->_audience, $this->_id, $this->_expiration, new \stdClass());
 
         $client = $this->createClient();
-        $crawler = $client->request('GET', 'heliosapi/zbozi', array(), array(), $this->GetHeaders($token));
+        $crawler = $client->request('GET', 'heliosapi/clients', $data, array(), $this->GetHeaders($token));
 
+        // Assert that the response status code is 2xx
+        $this->assertTrue($client->getResponse()->isSuccessful(), 'response status is 2xx');
+        // Assert that the "Content-Type" header is "application/json"
+        $this->assertTrue($client->getResponse()->headers->contains('Content-Type', 'application/json'),'the "Content-Type" header is "application/json"');
         $this->assertTrue($client->getResponse()->isOk());
-        // $this->assertCount(1, $crawler->filter('h1:contains("Contact us")'));
-        // $this->assertCount(1, $crawler->filter('form'));
+        // Assert data
+        $responseData = json_decode($client->getResponse()->getContent());
+		$this->assertTrue(isset($responseData->totalrows) && is_numeric($responseData->totalrows) && isset($responseData->rows) && is_array($responseData->rows), 'Result part sent.');
     }
+
+
+    // public function testClientlist_success () {}
+
+    // public function testClientlist_failure () {}
+
+    // public function testClientdetail_success () {}
+
+    // public function testClientdetail_failure () {}
+
+    // public function testProductlist_success () {}
+    
+    // public function testProductlist_failure () {}
+
+    // public function testProductdetail_success () {}
+    
+    // public function testProductdetail_failure () {}
+
 }
 ?>

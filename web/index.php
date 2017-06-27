@@ -37,13 +37,29 @@ $dbConfig = array(
                                             'password' => 'P*csX18!ax'
                                         )
 );
+
+//Autorization
+$app['signingkey'] = 'signingkey';
+
 $app->register(new \Silex\Provider\DoctrineServiceProvider(), $dbConfig);
 
-//JWT
+//JWT Autentification
+$app->before(function (Request $request) use($app)
+{
+    if (0 === strpos($request->headers->get('Content-Type'), 'application/json'))
+    {
+        $token = substr($request->server->get('Authorization'), 7);
+        $authService = new \HeliosAPI\AuthService($app['signingkey']);
 
+        if(!$authService->IsTokenVerified($token))
+            $app->abort(404, "Invalid request token.");
+    }
+    else
+        $app->abort(404, "Invalid request.");
+});
 
 //Controllers
-$app->mount('/heliosapi', new \HeliosAPI\HeliosAPIControllerProvider());
+$app->mount('/heliosapi', new \HeliosAPI\HeliosAPIControllerProvider($app['signingkey']));
 
 if ('test' == $app['env'])
     return $app;

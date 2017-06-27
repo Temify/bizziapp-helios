@@ -1,0 +1,1 @@
+[27-Jun-2017 13:52:53 UTC] PHP Fatal error:  pdo_sqlsrv_db_handle_factory: Unknown exception caught in /myApp/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOConnection.php on line 43

@@ -79,7 +79,7 @@ class AuthServiceTests extends WebTestCase
         $authService = new \HeliosAPI\AuthService($this->_signKey);
         $token = $authService->GetNewToken($this->_issuer, $this->_audience, $this->_id, $this->_expiration, $this->_data);
 
-        $this->assertInternalType('bool', $authService->IsTokenVerified($token, $this->_issuer, $this->_audience, $this->_id), 'IsVerified returns bool');
+        $this->assertInternalType('bool', $authService->IsTokenVerified($token), 'IsVerified returns bool');
         $this->assertTrue($authService->IsTokenVerified($token), 'IsVerified returns true');
     }
 
@@ -90,7 +90,7 @@ class AuthServiceTests extends WebTestCase
         $token = $authService->GetNewToken($this->_issuer, $this->_audience, $this->_id, $this->_expiration, $this->_data);
         $authServiceTest = new \HeliosAPI\AuthService($signKeyDifferent);
 
-        $this->assertInternalType('bool', $authServiceTest->IsTokenVerified($token, $this->_issuer, $this->_audience, $this->_id), 'IsVerified returns bool');
+        $this->assertInternalType('bool', $authServiceTest->IsTokenVerified($token), 'IsVerified returns bool');
         $this->assertFalse($authServiceTest->IsTokenVerified($token), 'IsVerified returns false');
     }
 
