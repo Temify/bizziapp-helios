@@ -103,31 +103,8 @@ status: <status 0 - 3> [TabCisOrg.Stav]
 
 Output parameters:
 ```
-{ 
-    rows: {
-        Array {
-            id: <id> [TabCisOrg.ID],
-            orgnum: <organisation number> [TabCisOrg.CisloOrg],
-            parentid: <parent client id> [TabCisOrg.NadrizenaOrg],
-            name: <name> [TabCisOrg.Nazev],
-            name2: <second name> [TabCisOrg.DruhyNazev],
-            email: <email> [],
-            phone: <phone number> [],
-            address: {
-                street: <street> [TabCisOrg.Ulice],
-                streetorinumber: <orientation number> [TabCisOrg.OrCislo],
-                streetdesnumber: <descriptive number> [TabCisOrg.PopCislo],
-                city: <city> [TabCisOrg.Misto],
-                zip: <zip code> [TabCisOrg.PSC]
-            },
-            contact: <contact>  [TabCisOrg.Kontakt],
-            ic: <ic number> [TabCisOrg.ICO],
-            dic: <dic number> [TabCisOrg.DIC],
-            web: <web URL> [],
-            status: <status 0 - 3> [TabCisOrg.Stav]
-        }
-    }
-}
+HTTP Response 201
+Header Location: clients/{id of created client}
 ```
 
 ### List of products
