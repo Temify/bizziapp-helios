@@ -29,12 +29,12 @@ $app->register(new \Silex\Provider\MonologServiceProvider(), array('monolog.logf
 //Database
 $dbConfig = array(
                     'db.options' => array(
-                                            'driver'   => 'pdo_sqlsrv',
-                                            'host' => 'brana.neudrinks.cz',
-                                            'port' => 1433,
-                                            'dbname' => 'Helios001',
-                                            'user' => 'petr.mensik',
-                                            'password' => 'P*csX18!ax'
+                                            'driver' => getenv('DB_DRIVER'),
+                                            'host' => getenv('DB_HOST'),
+                                            'port' => getenv('DB_PORT'),
+                                            'dbname' => getenv('DB_NAME'),
+                                            'user' => getenv('DB_USER'),
+                                            'password' => getenv('DB_PASSWORD')
                                         )
 );
 

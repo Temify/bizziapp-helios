@@ -181,7 +181,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
         // Create new client
         $controllers->post('/clients', function (Application $app, Request $request) 
         {
-            $lastInsertedId = null;
+            $newClientId = null;
 
             // Check data
             $sqlParams = Array();
@@ -228,16 +228,22 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             else
                 $app->abort(404, "Invalid request.");
 
+
+
+            //TODO: Check if client already exists
+
             $app['db']->insert('TabCisOrg', $sqlParams);
-            $lastInsertedId = $app['db']->lastInsertId();
+            $newClientId = $app['db']->lastInsertId();
             $app['db']->commit();
 
             //TODO: result 201 + Location header = /customers/<id>
-            return true;
+            $response =  new Response('Client created with id '.$newClientId, 201);
+            $response->headers->set('Location', 'clients/'.$newClientId);
+            return $response;
         });
 
         // Update client
-        $controllers->post('/clients', function (Application $app, Request $request) 
+        $controllers->put('/clients', function (Application $app, Request $request) 
         {
             // Check data
             $sqlParams = Array();
