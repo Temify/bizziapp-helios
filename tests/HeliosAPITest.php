@@ -97,19 +97,19 @@ class HeliosAPITests extends WebTestCase
     public function testPUTClients_success ()
     {
         $data = [
-                    'orgnum' => 999999001,
+                    'orgnum' => 999999015,
                     'name' => 'Jmeno klienta',
                     'name2' => 'Druhe jmeno klienta',
                     'street' => 'Ulice',
-                    'streetorinumber' => 10,
-                    'streetdesnumber' => 20,
+                    'streetorinumber' => '10',
+                    'streetdesnumber' => '20',
                     'city' => 'Mesto',
                     'status' => 0,
                     'parentid' => null,
                     'zip' => '12345',
                     'contact' => 'Kontakt',
-                    'ic' => 'ic',
-                    'dic' => 'dic'
+                    'ic' => null,
+                    'dic' => null
                 ];
 
         $authService = new \HeliosAPI\AuthService($this->_signKey);
@@ -118,14 +118,10 @@ class HeliosAPITests extends WebTestCase
         $client = $this->createClient();
         $crawler = $client->request('POST', 'heliosapi/clients', $data, array(), $this->GetHeaders($token));
 
-        // Assert that the response status code is 2xx
-        $this->assertTrue($client->getResponse()->isSuccessful(), 'response status is 2xx');
-        // Assert that the "Content-Type" header is "application/json"
-        $this->assertTrue($client->getResponse()->headers->contains('Content-Type', 'application/json'),'the "Content-Type" header is "application/json"');
-        $this->assertTrue($client->getResponse()->isOk());
-        // Assert data
-        $responseData = json_decode($client->getResponse()->getContent());
-		$this->assertTrue(isset($responseData->totalrows) && is_numeric($responseData->totalrows) && isset($responseData->rows) && is_array($responseData->rows), 'Result part sent.');
+        // Assert that the response status code is 201
+        $this->assertSame(201, $client->getInternalResponse()->getStatus(), 'response status is 201');
+        // Assert that the "Location" header contains URL for created clients detail
+        $this->assertRegExp("/clients\/[1-9]+[0-9]*/", $client->getInternalResponse()->getHeader('Location', true),'the "Location" header contains URL for created client detail');
     }
 
 

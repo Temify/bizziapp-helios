@@ -3,7 +3,7 @@ namespace HeliosAPI;
 
 use Silex\Application;
 use Silex\Api\ControllerProviderInterface;
-// use HeliosAPI\Types;
+use Symfony\Component\HttpFoundation\Response;
 
 class HeliosAPIControllerProvider implements ControllerProviderInterface
 {
@@ -116,7 +116,6 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
         $controllers->get('/clients/{id}', function (Application $app, $id) 
         {
             $result = new \stdClass();
-            $request = $app['request_stack']->getCurrentRequest();
 
             $qb = $app['db']->createQueryBuilder();
             $sqlParams = Array();
@@ -179,62 +178,59 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
         });
 
         // Create new client
-        $controllers->post('/clients', function (Application $app, Request $request) 
+        $controllers->post('/clients', function (Application $app) 
         {
             $newClientId = null;
+            $request = $app['request_stack']->getCurrentRequest();
 
             // Check data
             $sqlParams = Array();
-
             // Required fields
             if(
-                $request->request->get('orgnum') != null && is_numeric($request->request->get('orgnum')) &&
-                $request->request->get('name') != null && strlen($request->request->get('name')) <= 100 &&
-                $request->request->get('name2') != null && strlen($request->request->get('name2')) <= 100 &&
-                $request->request->address->get('street') != null && strlen($request->request->get('street')) <= 100 &&
-                $request->request->address->get('streetorinumber') != null && strlen($request->request->get('streetorinumber')) <= 15 &&
-                $request->request->address->get('streetdesnumber') != null && strlen($request->request->get('streetdesnumber')) <= 15 &&
-                $request->request->address->get('city') != null && strlen($request->request->get('city')) <= 100 &&
-                $request->request->get('status') != null && is_numeric($request->request->get('status'))
+                $request->get('orgnum') != null && is_numeric($request->get('orgnum')) &&
+                $request->get('name') != null && strlen($request->get('name')) <= 100 &&
+                $request->get('name2') != null && strlen($request->get('name2')) <= 100 &&
+                $request->get('street') != null && strlen($request->get('street')) <= 100 &&
+                $request->get('streetorinumber') != null && strlen($request->get('streetorinumber')) <= 15 &&
+                $request->get('streetdesnumber') != null && strlen($request->get('streetdesnumber')) <= 15 &&
+                $request->get('city') != null && strlen($request->get('city')) <= 100 &&
+                is_numeric($request->get('status'))
                 )
             {
-                $sqlParams['CisloOrg'] = $request->request->get('orgnum');
-                $sqlParams['Nazev'] = $request->request->get('name');
-                $sqlParams['DruhyNazev'] = $request->request->get('name2');
-                $sqlParams['Ulice'] = $request->request->address->get('street');
-                $sqlParams['OrCislo'] = $request->request->address->get('streetorinumber');
-                $sqlParams['PopCislo'] = $request->request->address->get('streetdesnumber');
-                $sqlParams['Misto'] = $request->request->address->get('city');
-                $sqlParams['Stav'] = $request->request->get('status');
+                $sqlParams['CisloOrg'] = $request->get('orgnum');
+                $sqlParams['Nazev'] = $request->get('name');
+                $sqlParams['DruhyNazev'] = $request->get('name2');
+                $sqlParams['Ulice'] = $request->get('street');
+                $sqlParams['OrCislo'] = $request->get('streetorinumber');
+                $sqlParams['PopCislo'] = $request->get('streetdesnumber');
+                $sqlParams['Misto'] = $request->get('city');
+                $sqlParams['Stav'] = $request->get('status');
             }
             else
                 $app->abort(404, "Invalid request.");
 
             // Optional fields
             if(
-                ($request->request->get('parentid') == null || is_numeric($request->request->get('parentid'))) &&
-                ($request->request->get('zip') == null || strlen($request->request->get('zip')) <= 10) &&
-                ($request->request->get('contact') == null || strlen($request->request->get('contact')) <= 40) &&
-                ($request->request->get('ic') == null || strlen($request->request->get('ic')) <= 20) &&
-                ($request->request->get('dic') == null || strlen($request->request->get('dic')) <= 15)
+                ($request->get('parentid') == null || is_numeric($request->get('parentid'))) &&
+                ($request->get('zip') == null || strlen($request->get('zip')) <= 10) &&
+                ($request->get('contact') == null || strlen($request->get('contact')) <= 40) &&
+                ($request->get('ic') == null || strlen($request->get('ic')) <= 20) &&
+                ($request->get('dic') == null || strlen($request->get('dic')) <= 15)
             )
             {
-                $sqlParams['NadrizenaOrg'] = $request->request->get('parentid');
-                $sqlParams['PSC'] = $request->request->address->get('zip');
-                $sqlParams['Kontakt'] = $request->request->get('contact');
-                $sqlParams['ICO'] = $request->request->get('ic');
-                $sqlParams['DIC'] = $request->request->get('dic');
+                $sqlParams['NadrizenaOrg'] = $request->get('parentid');
+                $sqlParams['PSC'] = $request->get('zip');
+                $sqlParams['Kontakt'] = $request->get('contact');
+                $sqlParams['ICO'] = $request->get('ic');
+                $sqlParams['DIC'] = $request->get('dic');
             }
             else
                 $app->abort(404, "Invalid request.");
-
-
 
             //TODO: Check if client already exists
 
             $app['db']->insert('TabCisOrg', $sqlParams);
             $newClientId = $app['db']->lastInsertId();
-            $app['db']->commit();
 
             //TODO: result 201 + Location header = /customers/<id>
             $response =  new Response('Client created with id '.$newClientId, 201);
@@ -250,42 +246,42 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
 
             // Required fields
             if(
-                $request->request->get('orgnum') != null && is_numeric($request->request->get('orgnum')) &&
-                $request->request->get('name') != null && strlen($request->request->get('name')) <= 100 &&
-                $request->request->get('name2') != null && strlen($request->request->get('name2')) <= 100 &&
-                $request->request->address->get('street') != null && strlen($request->request->get('street')) <= 100 &&
-                $request->request->address->get('streetorinumber') != null && strlen($request->request->get('streetorinumber')) <= 15 &&
-                $request->request->address->get('streetdesnumber') != null && strlen($request->request->get('streetdesnumber')) <= 15 &&
-                $request->request->address->get('city') != null && strlen($request->request->get('city')) <= 100 &&
-                $request->request->get('status') != null && is_numeric($request->request->get('status'))
+                $request->get('orgnum') != null && is_numeric($request->get('orgnum')) &&
+                $request->get('name') != null && strlen($request->get('name')) <= 100 &&
+                $request->get('name2') != null && strlen($request->get('name2')) <= 100 &&
+                $request->get('street') != null && strlen($request->get('street')) <= 100 &&
+                $request->get('streetorinumber') != null && strlen($request->get('streetorinumber')) <= 15 &&
+                $request->get('streetdesnumber') != null && strlen($request->get('streetdesnumber')) <= 15 &&
+                $request->get('city') != null && strlen($request->get('city')) <= 100 &&
+                $request->get('status') != null && is_numeric($request->get('status'))
                 )
             {
-                $sqlParams['CisloOrg'] = $request->request->get('orgnum');
-                $sqlParams['Nazev'] = $request->request->get('name');
-                $sqlParams['DruhyNazev'] = $request->request->get('name2');
-                $sqlParams['Ulice'] = $request->request->address->get('street');
-                $sqlParams['OrCislo'] = $request->request->address->get('streetorinumber');
-                $sqlParams['PopCislo'] = $request->request->address->get('streetdesnumber');
-                $sqlParams['Misto'] = $request->request->address->get('city');
-                $sqlParams['Stav'] = $request->request->get('status');
+                $sqlParams['CisloOrg'] = $request->get('orgnum');
+                $sqlParams['Nazev'] = $request->get('name');
+                $sqlParams['DruhyNazev'] = $request->get('name2');
+                $sqlParams['Ulice'] = $request->get('street');
+                $sqlParams['OrCislo'] = $request->get('streetorinumber');
+                $sqlParams['PopCislo'] = $request->get('streetdesnumber');
+                $sqlParams['Misto'] = $request->get('city');
+                $sqlParams['Stav'] = $request->get('status');
             }
             else
                 $app->abort(404, "Invalid request.");
 
             // Optional fields
             if(
-                ($request->request->get('parentid') == null || is_numeric($request->request->get('parentid'))) &&
-                ($request->request->get('zip') == null || strlen($request->request->get('zip')) <= 10) &&
-                ($request->request->get('contact') == null || strlen($request->request->get('contact')) <= 40) &&
-                ($request->request->get('ic') == null || strlen($request->request->get('ic')) <= 20) &&
-                ($request->request->get('dic') == null || strlen($request->request->get('dic')) <= 15)
+                ($request->get('parentid') == null || is_numeric($request->get('parentid'))) &&
+                ($request->get('zip') == null || strlen($request->get('zip')) <= 10) &&
+                ($request->get('contact') == null || strlen($request->get('contact')) <= 40) &&
+                ($request->get('ic') == null || strlen($request->get('ic')) <= 20) &&
+                ($request->get('dic') == null || strlen($request->get('dic')) <= 15)
             )
             {
-                $sqlParams['NadrizenaOrg'] = $request->request->get('parentid');
-                $sqlParams['PSC'] = $request->request->address->get('zip');
-                $sqlParams['Kontakt'] = $request->request->get('contact');
-                $sqlParams['ICO'] = $request->request->get('ic');
-                $sqlParams['DIC'] = $request->request->get('dic');
+                $sqlParams['NadrizenaOrg'] = $request->get('parentid');
+                $sqlParams['PSC'] = $request->get('zip');
+                $sqlParams['Kontakt'] = $request->get('contact');
+                $sqlParams['ICO'] = $request->get('ic');
+                $sqlParams['DIC'] = $request->get('dic');
             }
             else
                 $app->abort(404, "Invalid request.");
