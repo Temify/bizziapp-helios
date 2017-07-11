@@ -46,8 +46,29 @@ class HeliosAPITests extends WebTestCase
         
         return $headers;
     }
-    
+
     public function testGETClients_success ()
+    {
+        $data = [
+                ];
+
+        $authService = new \HeliosAPI\AuthService($this->_signKey);
+        $token = $authService->GetNewToken($this->_issuer, $this->_audience, $this->_id, $this->_expiration, new \stdClass());
+
+        $client = $this->createClient();
+        $crawler = $client->request('GET', 'heliosapi/clients', $data, array(), $this->GetHeaders($token));
+
+        // Assert that the response status code is 2xx
+        $this->assertTrue($client->getResponse()->isSuccessful(), 'response status is 2xx');
+        // Assert that the "Content-Type" header is "application/json"
+        $this->assertTrue($client->getResponse()->headers->contains('Content-Type', 'application/json'),'the "Content-Type" header is "application/json"');
+        $this->assertTrue($client->getResponse()->isOk());
+        // Assert data
+        $responseData = json_decode($client->getResponse()->getContent());
+		$this->assertTrue(isset($responseData->totalrows) && is_numeric($responseData->totalrows) && isset($responseData->rows) && is_array($responseData->rows), 'Result part sent.');
+    }
+
+    public function testGETClientsWithFilter_success ()
     {
         $data = [
                     'name' => 'a',
@@ -94,10 +115,10 @@ class HeliosAPITests extends WebTestCase
 		$this->assertTrue(isset($responseData->id) && is_numeric($responseData->id) && isset($responseData->orgnum) && is_numeric($responseData->orgnum), 'Result part sent.');
     }
 
-    public function testPUTClients_success ()
+    public function testPOSTClients_success ()
     {
         $data = [
-                    'orgnum' => 999999015,
+                    'orgnum' => 999999016,
                     'name' => 'Jmeno klienta',
                     'name2' => 'Druhe jmeno klienta',
                     'street' => 'Ulice',

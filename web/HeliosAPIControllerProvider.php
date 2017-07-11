@@ -38,11 +38,26 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $sqlParams[] = '%'.$request->get('name').'%';
             }
 
+            // Status
+            if(!empty($request->get('status')) || $request->get('status') == '0')
+            {
+                $qb->andWhere('TabCisOrg.Stav = ?');
+                $sqlParams[] = $request->get('status');
+            }
+
             // Get total rows count
             $qb->select('COUNT(TabCisOrg.ID) AS totalcount');
             $app['db']->prepare($qb->getSql());
             $app['monolog']->info('DB Select client whole list rows - TOTAL COUNT:'.$qb->getSql());
-            $totalRows = $app['db']->fetchAll('SELECT COUNT(TabCisOrg.ID) AS totalcount FROM TabCisOrg WHERE (TabCisOrg.Nazev LIKE ?) OR (TabCisOrg.DruhyNazev LIKE ?)', $sqlParams);
+
+            $totalRows = $app['db']->fetchAll($qb->getSql(), $sqlParams);
+            $result->totalrows = $totalRows[0]['totalcount'];
+
+            // if(count($sqlParams) > 0)
+            //     $totalRows = $app['db']->fetchAll('SELECT COUNT(TabCisOrg.ID) AS totalcount FROM TabCisOrg WHERE (TabCisOrg.Nazev LIKE ?) OR (TabCisOrg.DruhyNazev LIKE ?)', $sqlParams);
+            // else
+            //     $totalRows = $app['db']->fetchAll('SELECT COUNT(TabCisOrg.ID) AS totalcount FROM TabCisOrg');
+
             $result->totalrows = $totalRows[0]['totalcount'];
             // Get part of lits
             $qb->select(
