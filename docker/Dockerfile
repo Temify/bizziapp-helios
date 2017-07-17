@@ -33,6 +33,7 @@ apt-get -y install libapache2-mod-php7.0 apache2 && \
 a2dismod mpm_event && \
 a2enmod mpm_prefork && \
 a2enmod php7.0 && \
+a2enmod rewrite && \
 echo "extension=sqlsrv.so" >> /etc/php/7.0/apache2/php.ini && \
 echo "extension=pdo_sqlsrv.so" >> /etc/php/7.0/apache2/php.ini && \
 service apache2 restart && \

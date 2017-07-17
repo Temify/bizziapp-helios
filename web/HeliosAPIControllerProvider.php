@@ -24,39 +24,51 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
         {
             $result = new \stdClass();
             $request = $app['request_stack']->getCurrentRequest();
+            $inputParams = $request->query->all();
+
             $qb = $app['db']->createQueryBuilder();
             $sqlParams = Array();
 
             $qb->from('TabCisOrg');
             
             // Name
-            if(!empty($request->get('name')))
+            if(!empty($inputParams['name']))
             {
                 $qb->andWhere('TabCisOrg.Nazev LIKE ?');
-                $sqlParams[] = '%'.$request->get('name').'%';
+                $sqlParams[] = '%'.$inputParams['name'].'%';
                 $qb->orWhere('TabCisOrg.DruhyNazev LIKE ?');
-                $sqlParams[] = '%'.$request->get('name').'%';
+                $sqlParams[] = '%'.$inputParams['name'].'%';
+            }
+
+            // Name is not null
+            if(!empty($inputParams['nameisnotnull']))
+            {
+                if($inputParams['nameisnotnull'] == 'true')
+                {
+                    $qb->andWhere("TabCisOrg.Nazev != ''");
+                    $qb->andWhere("TabCisOrg.DruhyNazev != ''");
+                }
+                else
+                {
+                    $qb->andWhere("TabCisOrg.Nazev = ''");
+                    $qb->andWhere("TabCisOrg.DruhyNazev = ''");
+                }
             }
 
             // Status
-            if(!empty($request->get('status')) || $request->get('status') == '0')
+            if(!empty($inputParams['status']) || $inputParams['status'] == '0')
             {
                 $qb->andWhere('TabCisOrg.Stav = ?');
-                $sqlParams[] = $request->get('status');
+                $sqlParams[] = $inputParams['status'];
             }
 
             // Get total rows count
             $qb->select('COUNT(TabCisOrg.ID) AS totalcount');
             $app['db']->prepare($qb->getSql());
-            $app['monolog']->info('DB Select client whole list rows - TOTAL COUNT:'.$qb->getSql());
+            if($app['debug']) $app['monolog']->info('DB Select client whole list rows - TOTAL COUNT:'.$qb->getSql());
 
             $totalRows = $app['db']->fetchAll($qb->getSql(), $sqlParams);
-            $result->totalrows = $totalRows[0]['totalcount'];
-
-            // if(count($sqlParams) > 0)
-            //     $totalRows = $app['db']->fetchAll('SELECT COUNT(TabCisOrg.ID) AS totalcount FROM TabCisOrg WHERE (TabCisOrg.Nazev LIKE ?) OR (TabCisOrg.DruhyNazev LIKE ?)', $sqlParams);
-            // else
-            //     $totalRows = $app['db']->fetchAll('SELECT COUNT(TabCisOrg.ID) AS totalcount FROM TabCisOrg');
+            $result->totalrows = (int)$totalRows[0]['totalcount'];
 
             $result->totalrows = $totalRows[0]['totalcount'];
             // Get part of lits
@@ -71,18 +83,30 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                         );
 
             // Limit from
-            if(!empty($request->get('listfrom')))
-                $qb->setFirstResult($request->get('listfrom'));
+            if(!empty($inputParams['listfrom']))
+                $qb->setFirstResult($inputParams['listfrom']);
             
             // Limit to
-            if(!empty($request->get('listto')))
-                $qb->setMaxResults($request->get('listto'));
+            if(!empty($inputParams['listto']))
+                $qb->setMaxResults($inputParams['listto']);
 
 			// Sort
-			if(!empty($request->get('sort')))
+			if(!empty($inputParams['sort']))
 			{
-				switch($request->get('sort'))
+				switch($inputParams['sort'])
 				{
+					case 'idasc':
+					{
+						$qb->orderBy('TabCisOrg.ID', 'ASC');
+						break;
+					}
+
+					case 'iddesc':
+					{
+						$qb->orderBy('TabCisOrg.ID', 'DESC');
+						break;
+					}
+
 					case 'nameasc':
 					{
 						$qb->orderBy('TabCisOrg.Nazev', 'ASC');
@@ -95,41 +119,44 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
 						break;
 					}
 
-					default:
-					{
-						break;
-					}
+                    default:
+                    {
+                        break;
+                    }
 				}
 			}
 
             $app['db']->prepare($qb->getSql());
-            $app['monolog']->info('DB Select client list :'.$qb->getSql());
+            if($app['debug']) $app['monolog']->info('DB Select client list :'.$qb->getSql());
             $listData = $app['db']->fetchAll($qb->getSql(), $sqlParams);
 
             foreach($listData as $row)
             {
                 $newRow = new \stdClass();
-                $newRow->id = $row['ID'];
-                $newRow->orgnum = $row['CisloOrg'];
-                $newRow->parentid = $row['NadrizenaOrg'];
+                $newRow->id = (int)$row['ID'];
+                $newRow->orgnum = (int)$row['CisloOrg'];
+                $newRow->parentid = (int)$row['NadrizenaOrg'];
                 $newRow->name = $row['Nazev'];
                 $newRow->name2 = $row['DruhyNazev'];
                 $newRow->email = '';
                 $newRow->phone = '';
                 $newRow->contact = $row['Kontakt'];
                 $newRow->web = '';
-                $newRow->status = $row['Stav'];
+                $newRow->status = (int)$row['Stav'];
                 $result->rows[] = $newRow;
             }
 
             //Construct response
-	        $app['monolog']->info('Response: data:'.json_encode($result));
+            if($app['debug']) $app['monolog']->info('Response: data:'.json_encode($result));
             return $app->json($result);
         });
         
         // Get detail of client
         $controllers->get('/clients/{id}', function (Application $app, $id) 
         {
+            if(empty($id) || !is_numeric($id))
+                $app->abort(400, "Bad Request.");
+
             $result = new \stdClass();
 
             $qb = $app['db']->createQueryBuilder();
@@ -160,15 +187,18 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                         );
 
             $app['db']->prepare($qb->getSql());
-            $app['monolog']->info('DB Select client detail :'.$qb->getSql());
+            if($app['debug']) $app['monolog']->info('DB Select client detail :'.$qb->getSql());
             $listData = $app['db']->fetchAll($qb->getSql(), $sqlParams);
+
+            if(count($listData) < 1)
+                $app->abort(404, "Not Found.");
 
             foreach($listData as $row)
             {
                 $newRow = new \stdClass();
-                $newRow->id = $row['ID'];
-                $newRow->orgnum = $row['CisloOrg'];
-                $newRow->parentid = $row['NadrizenaOrg'];
+                $newRow->id = (int)$row['ID'];
+                $newRow->orgnum = (int)$row['CisloOrg'];
+                $newRow->parentid = (int)$row['NadrizenaOrg'];
                 $newRow->name = $row['Nazev'];
                 $newRow->name2 = $row['DruhyNazev'];
                 $newRow->email = '';
@@ -183,12 +213,12 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->ic = '';
                 $newRow->dic = '';
                 $newRow->web = '';
-                $newRow->status = $row['Stav'];
+                $newRow->status = (int)$row['Stav'];
                 $result = $newRow;
             }
 
             //Construct response
-	        $app['monolog']->info('Response: data:'.json_encode($result));
+	        if($app['debug']) $app['monolog']->info('Response: data:'.json_encode($result));
             return $app->json($result);
         });
 
@@ -197,112 +227,157 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
         {
             $newClientId = null;
             $request = $app['request_stack']->getCurrentRequest();
+            $inputParams = json_decode($request->getContent(), true);
+            $qb = $app['db']->createQueryBuilder();
 
             // Check data
             $sqlParams = Array();
+
+            // Generate orgnum
+            if(empty($inputParams['orgnum']))
+            {
+                $sql = "DECLARE @CisloOrg INT;EXEC @CisloOrg=dbo.hp_NajdiPrvniVolny 'TabCisOrg','CisloOrg',1,2147483647,'',1,1;SELECT @CisloOrg AS neworgnum;";
+                if($app['debug']) $app['monolog']->info('DB Select new orgnum:'.$sql);
+                $queryResult = $app['db']->executeQuery($sql);
+                $newOrgnum = $queryResult->fetch();
+                $inputParams['orgnum'] = (int)$newOrgnum['neworgnum'];
+            }
+
+            // Check if client already exists
+            $sql = 'SELECT 1 AS clientexists FROM TabCisOrg WHERE TabCisOrg.CisloOrg = '.$inputParams['orgnum'];
+            if($app['debug']) $app['monolog']->info('DB Cseck if client with orgnum exists:'.$sql);
+            $queryResult = $app['db']->executeQuery($sql);
+            $clientExists = $queryResult->fetch();
+            if($clientExists['clientexists'] == 1)
+                $app->abort(409, "Conflict.");
+
             // Required fields
             if(
-                $request->get('orgnum') != null && is_numeric($request->get('orgnum')) &&
-                $request->get('name') != null && strlen($request->get('name')) <= 100 &&
-                $request->get('name2') != null && strlen($request->get('name2')) <= 100 &&
-                $request->get('street') != null && strlen($request->get('street')) <= 100 &&
-                $request->get('streetorinumber') != null && strlen($request->get('streetorinumber')) <= 15 &&
-                $request->get('streetdesnumber') != null && strlen($request->get('streetdesnumber')) <= 15 &&
-                $request->get('city') != null && strlen($request->get('city')) <= 100 &&
-                is_numeric($request->get('status'))
+                $inputParams['orgnum'] != null && is_numeric($inputParams['orgnum']) &&
+                $inputParams['name'] != null && strlen($inputParams['name']) <= 100 &&
+                $inputParams['name2'] != null && strlen($inputParams['name2']) <= 100 &&
+                $inputParams['street'] != null && strlen($inputParams['street']) <= 100 &&
+                $inputParams['streetorinumber'] != null && strlen($inputParams['streetorinumber']) <= 15 &&
+                $inputParams['streetdesnumber'] != null && strlen($inputParams['streetdesnumber']) <= 15 &&
+                $inputParams['city'] != null && strlen($inputParams['city']) <= 100 &&
+                is_numeric($inputParams['status'])
                 )
             {
-                $sqlParams['CisloOrg'] = $request->get('orgnum');
-                $sqlParams['Nazev'] = $request->get('name');
-                $sqlParams['DruhyNazev'] = $request->get('name2');
-                $sqlParams['Ulice'] = $request->get('street');
-                $sqlParams['OrCislo'] = $request->get('streetorinumber');
-                $sqlParams['PopCislo'] = $request->get('streetdesnumber');
-                $sqlParams['Misto'] = $request->get('city');
-                $sqlParams['Stav'] = $request->get('status');
+                $sqlParams['CisloOrg'] = $inputParams['orgnum'];
+                $sqlParams['Nazev'] = $inputParams['name'];
+                $sqlParams['DruhyNazev'] = $inputParams['name2'];
+                $sqlParams['Ulice'] = $inputParams['street'];
+                $sqlParams['OrCislo'] = $inputParams['streetorinumber'];
+                $sqlParams['PopCislo'] = $inputParams['streetdesnumber'];
+                $sqlParams['Misto'] = $inputParams['city'];
+                $sqlParams['Stav'] = $inputParams['status'];
             }
             else
-                $app->abort(404, "Invalid request.");
+                $app->abort(400, "Bad Request.");
 
             // Optional fields
             if(
-                ($request->get('parentid') == null || is_numeric($request->get('parentid'))) &&
-                ($request->get('zip') == null || strlen($request->get('zip')) <= 10) &&
-                ($request->get('contact') == null || strlen($request->get('contact')) <= 40) &&
-                ($request->get('ic') == null || strlen($request->get('ic')) <= 20) &&
-                ($request->get('dic') == null || strlen($request->get('dic')) <= 15)
+                ($inputParams['parentid'] == null || is_numeric($inputParams['parentid'])) &&
+                ($inputParams['zip'] == null || strlen($inputParams['zip']) <= 10) &&
+                ($inputParams['contact'] == null || strlen($inputParams['contact']) <= 40) &&
+                ($inputParams['ic'] == null || strlen($inputParams['ic']) <= 20) &&
+                ($inputParams['dic'] == null || strlen($inputParams['dic']) <= 15)
             )
             {
-                $sqlParams['NadrizenaOrg'] = $request->get('parentid');
-                $sqlParams['PSC'] = $request->get('zip');
-                $sqlParams['Kontakt'] = $request->get('contact');
-                $sqlParams['ICO'] = $request->get('ic');
-                $sqlParams['DIC'] = $request->get('dic');
+                $sqlParams['NadrizenaOrg'] = $inputParams['parentid'];
+                $sqlParams['PSC'] = $inputParams['zip'];
+                $sqlParams['Kontakt'] = $inputParams['contact'];
+                $sqlParams['ICO'] = $inputParams['ic'];
+                $sqlParams['DIC'] = $inputParams['dic'];
             }
             else
-                $app->abort(404, "Invalid request.");
-
-            //TODO: Check if client already exists
+                $app->abort(400, "Bad Request.");
 
             $app['db']->insert('TabCisOrg', $sqlParams);
             $newClientId = $app['db']->lastInsertId();
 
-            //TODO: result 201 + Location header = /customers/<id>
-            $response =  new Response('Client created with id '.$newClientId, 201);
+            $response =  new Response(json_encode(array('id' => (int)$newClientId)), 201);
             $response->headers->set('Location', 'clients/'.$newClientId);
             return $response;
         });
 
-        // Update client
-        $controllers->put('/clients', function (Application $app, Request $request) 
+        // Update all clients - method not allowed
+        $controllers->put('/clients', function (Application $app)
         {
+            $app->abort(405, "Method Not Allowed.");
+        });
+
+        // Update client
+        $controllers->put('/clients/{id}', function (Application $app, $id)
+        {
+            $request = $app['request_stack']->getCurrentRequest();
+
+            // Check if client exists
+            $qb = $app['db']->createQueryBuilder();
+            $qb->select(
+                        'TabCisOrg.ID',
+                        'TabCisOrg.CisloOrg',
+                        'TabCisOrg.Stav'
+                        );
+            $qb->from('TabCisOrg');            
+            $qb->andWhere('TabCisOrg.ID = ?');
+            $app['db']->prepare($qb->getSql());
+            if($app['debug']) $app['monolog']->info('DB Select client by ID :'.$qb->getSql());
+            $clientData = $app['db']->fetchAssoc($qb->getSql(), array($id));
+            if(!is_array($clientData) || count($clientData) <= 0)
+                $app->abort(404, "Not Found.");
+
             // Check data
+            $inputData = $request->request->all();
+            if(count($inputData) < 1)
+                $app->abort(204, "No Content.");
+
+            // Optional fields - but must be at least one
             $sqlParams = Array();
-
-            // Required fields
-            if(
-                $request->get('orgnum') != null && is_numeric($request->get('orgnum')) &&
-                $request->get('name') != null && strlen($request->get('name')) <= 100 &&
-                $request->get('name2') != null && strlen($request->get('name2')) <= 100 &&
-                $request->get('street') != null && strlen($request->get('street')) <= 100 &&
-                $request->get('streetorinumber') != null && strlen($request->get('streetorinumber')) <= 15 &&
-                $request->get('streetdesnumber') != null && strlen($request->get('streetdesnumber')) <= 15 &&
-                $request->get('city') != null && strlen($request->get('city')) <= 100 &&
-                $request->get('status') != null && is_numeric($request->get('status'))
-                )
-            {
+            if($request->get('orgnum') != null && is_numeric($request->get('orgnum')))
                 $sqlParams['CisloOrg'] = $request->get('orgnum');
+            if($request->get('name') != null && strlen($request->get('name')) <= 100)
                 $sqlParams['Nazev'] = $request->get('name');
+            if($request->get('name2') != null && strlen($request->get('name2')) <= 100)
                 $sqlParams['DruhyNazev'] = $request->get('name2');
+            if($request->get('street') != null && strlen($request->get('street')) <= 100)
                 $sqlParams['Ulice'] = $request->get('street');
+            if($request->get('streetorinumber') != null && strlen($request->get('streetorinumber')) <= 15)
                 $sqlParams['OrCislo'] = $request->get('streetorinumber');
+            if($request->get('streetdesnumber') != null && strlen($request->get('streetdesnumber')) <= 15)
                 $sqlParams['PopCislo'] = $request->get('streetdesnumber');
+            if($request->get('city') != null && strlen($request->get('city')) <= 100)
                 $sqlParams['Misto'] = $request->get('city');
+            if(is_numeric($request->get('status')))        
                 $sqlParams['Stav'] = $request->get('status');
-            }
-            else
-                $app->abort(404, "Invalid request.");
-
-            // Optional fields
-            if(
-                ($request->get('parentid') == null || is_numeric($request->get('parentid'))) &&
-                ($request->get('zip') == null || strlen($request->get('zip')) <= 10) &&
-                ($request->get('contact') == null || strlen($request->get('contact')) <= 40) &&
-                ($request->get('ic') == null || strlen($request->get('ic')) <= 20) &&
-                ($request->get('dic') == null || strlen($request->get('dic')) <= 15)
-            )
-            {
+            if(($request->get('parentid') == null || is_numeric($request->get('parentid'))))
                 $sqlParams['NadrizenaOrg'] = $request->get('parentid');
+            if(($request->get('zip') == null || strlen($request->get('zip')) <= 10))
                 $sqlParams['PSC'] = $request->get('zip');
+            if(($request->get('contact') == null || strlen($request->get('contact')) <= 40))
                 $sqlParams['Kontakt'] = $request->get('contact');
+            if(($request->get('ic') == null || strlen($request->get('ic')) <= 20))
                 $sqlParams['ICO'] = $request->get('ic');
+            if(($request->get('dic') == null || strlen($request->get('dic')) <= 15))
                 $sqlParams['DIC'] = $request->get('dic');
-            }
-            else
-                $app->abort(404, "Invalid request.");
 
-            $app['db']->insert('TabCisOrg', $sqlParams);
-            $app['db']->commit();
+            // No input data received
+            print_r($sqlParams);
+            die();
+            if(count($sqlParams) < 1)
+                $app->abort(400, "Bad Request.");
+
+            $app['db']->beginTransaction();
+            $result = $app['db']->update('TabCisOrg', $sqlParams, array('ID' => $id));
+
+            // If exactly 1 row was affected            
+            if($result === 1)
+                $app['db']->commit();
+            else
+            {
+                $app['db']->rollBack();
+                $app->abort(500, "Internal Server Error.");
+            }
 
             return true;
         });
@@ -348,9 +423,9 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             // Get total rows count
             $qb->select('COUNT(TabKmenZbozi.ID) AS totalcount');
             $app['db']->prepare($qb->getSql());
-            $app['monolog']->info('DB Select product whole list rows - TOTAL COUNT:'.$qb->getSql());
+            if($app['debug']) $app['monolog']->info('DB Select product whole list rows - TOTAL COUNT:'.$qb->getSql());
             $totalRows = $app['db']->fetchAll($qb->getSql(), $sqlParams);
-            $result->totalrows = $totalRows[0]['totalcount'];
+            $result->totalrows = (int)$totalRows[0]['totalcount'];
 
             // Get part of lits
             $qb->select(
@@ -397,13 +472,13 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
 			}
 
             $app['db']->prepare($qb->getSql());
-            $app['monolog']->info('DB Select client list :'.$qb->getSql());
+            if($app['debug']) $app['monolog']->info('DB Select client list :'.$qb->getSql());
             $listData = $app['db']->fetchAll($qb->getSql(), $sqlParams);
 
             foreach($listData as $row)
             {
                 $newRow = new \stdClass();
-                $newRow->id = $row['ID'];
+                $newRow->id = (int)$row['ID'];
                 $newRow->regnum = $row['RegCis'];
                 $newRow->group = $row['SkupZbo'];
                 $newRow->name1 = $row['Nazev1'];
@@ -415,7 +490,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             }
 
             //Construct response
-	        $app['monolog']->info('Response: data:'.json_encode($result));
+	        if($app['debug']) $app['monolog']->info('Response: data:'.json_encode($result));
             return $app->json($result);
         });
 
@@ -462,13 +537,13 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                         );
 
             $app['db']->prepare($qb->getSql());
-            $app['monolog']->info('DB Select product detail :'.$qb->getSql());
+            if($app['debug']) $app['monolog']->info('DB Select product detail :'.$qb->getSql());
             $listData = $app['db']->fetchAll($qb->getSql(), $sqlParams);
 
             foreach($listData as $row)
             {
                 $newRow = new \stdClass();
-                $newRow->id = $row['ID'];
+                $newRow->id = (int)$row['ID'];
                 $newRow->group = $row['SkupZbo'];
                 $newRow->regnum = $row['RegCis'];
                 $newRow->name = $row['Nazev1'];
@@ -496,7 +571,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             }
 
             //Construct response
-	        $app['monolog']->info('Response: data:'.json_encode($result));
+	        if($app['debug']) $app['monolog']->info('Response: data:'.json_encode($result));
             return $app->json($result);
         });
         return $controllers;
