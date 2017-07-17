@@ -56,7 +56,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             }
 
             // Status
-            if(!empty($inputParams['status']) || $inputParams['status'] == '0')
+            if(isset($inputParams['status']) && (!empty($inputParams['status']) || $inputParams['status'] == '0'))
             {
                 $qb->andWhere('TabCisOrg.Stav = ?');
                 $sqlParams[] = $inputParams['status'];

@@ -1,0 +1,166 @@
+{
+	"_type": "export",
+	"__export_format": 3,
+	"__export_date": "2017-07-17T13:58:11.025Z",
+	"__export_source": "insomnia.desktop.app:v5.5.2",
+	"resources": [
+		{
+			"_id": "wrk_905933e2087744489f933b33bd6bb288",
+			"parentId": null,
+			"modified": 1500046724580,
+			"created": 1500046724580,
+			"name": "Insomnia",
+			"description": "",
+			"certificates": [],
+			"_type": "workspace"
+		},
+		{
+			"_id": "env_c731171ad9ca4b4db790c38a084fe0cb",
+			"parentId": "wrk_905933e2087744489f933b33bd6bb288",
+			"modified": 1500047911431,
+			"created": 1500047911431,
+			"name": "Base Environment",
+			"data": {},
+			"color": null,
+			"_type": "environment"
+		},
+		{
+			"_id": "jar_1fb0664be74f4c4080d9ec9e70c3a230",
+			"parentId": "wrk_905933e2087744489f933b33bd6bb288",
+			"modified": 1500047977607,
+			"created": 1500047977607,
+			"name": "Default Jar",
+			"cookies": [],
+			"_type": "cookie_jar"
+		},
+		{
+			"_id": "fld_762506e0fe214df688a6539c85c4ca24",
+			"parentId": "wrk_905933e2087744489f933b33bd6bb288",
+			"modified": 1500299002011,
+			"created": 1500299002011,
+			"name": "HeliosAPI-production",
+			"description": "",
+			"environment": {},
+			"metaSortKey": -1500299002012,
+			"_type": "request_group"
+		},
+		{
+			"_id": "req_61e581295f1e4df99db1dcb8370087af",
+			"parentId": "fld_762506e0fe214df688a6539c85c4ca24",
+			"modified": 1500299867167,
+			"created": 1500299012047,
+			"url": "http://helios-app.eu-central-1.elasticbeanstalk.com/web/index.php/heliosapi/clients",
+			"name": "GET:clients",
+			"description": "",
+			"method": "GET",
+			"body": {
+				"mimeType": "application/json",
+				"text": ""
+			},
+			"parameters": [
+				{
+					"name": "sort",
+					"value": "iddesc",
+					"id": "pair_54420de7638f4aa0acd9b810622b41cd"
+				},
+				{
+					"name": "nameisnotnull",
+					"value": "true",
+					"id": "pair_a2462b317a0f4b88811a738233c6dcab"
+				}
+			],
+			"headers": [
+				{
+					"name": "Accept",
+					"value": "application/json",
+					"id": "pair_7f66a1847abe44148c09edbf3df204e0"
+				},
+				{
+					"name": "Authorization",
+					"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImp0aSI6IjU5NjM1MmM0ZWQ1YjgifQ.eyJpc3MiOiJpc3N1ZXIiLCJhdWQiOiJhdWRpZW5jZSIsImp0aSI6IjU5NjM1MmM0ZWQ1YjgiLCJpYXQiOjE0OTk2ODE0NzYsIm5iZiI6MTQ5OTY4MTQ3NiwiZXhwIjoxNDk5Njg1MDc2LCJkYXRhIjp7fX0.qTn-HNcPueW-_raGBSivgLf6y5cVHrpl8wjL996eqcA",
+					"id": "pair_dfc1675cfca24cbd82e84d4c857430ab"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1500047911332.5,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_9af6905e287c4afba1798df55c6c07d8",
+			"parentId": "fld_762506e0fe214df688a6539c85c4ca24",
+			"modified": 1500299885925,
+			"created": 1500299341565,
+			"url": "http://helios-app.eu-central-1.elasticbeanstalk.com/web/index.php/heliosapi/clients",
+			"name": "POST:clients",
+			"description": "",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n\t\t\"name\": \"jmeno1\",\n    \"name2\": \"jmeno2\",\n    \"street\": \"ulice\",\n    \"streetorinumber\": \"orientacnicislo\",\n    \"streetdesnumber\": \"popisnecislo\",\n    \"city\": \"mesto\",\n    \"status\": \"0\"\n}"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Accept",
+					"value": "application/json",
+					"id": "pair_4e253b625d554fa4a8c67ba453824477"
+				},
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_7f66a1847abe44148c09edbf3df204e0"
+				},
+				{
+					"name": "Authorization",
+					"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImp0aSI6IjU5NjM1MmM0ZWQ1YjgifQ.eyJpc3MiOiJpc3N1ZXIiLCJhdWQiOiJhdWRpZW5jZSIsImp0aSI6IjU5NjM1MmM0ZWQ1YjgiLCJpYXQiOjE0OTk2ODE0NzYsIm5iZiI6MTQ5OTY4MTQ3NiwiZXhwIjoxNDk5Njg1MDc2LCJkYXRhIjp7fX0.qTn-HNcPueW-_raGBSivgLf6y5cVHrpl8wjL996eqcA",
+					"id": "pair_dfc1675cfca24cbd82e84d4c857430ab"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1500047911182.5,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_d23421227b1347008da9a1d423cb612a",
+			"parentId": "fld_762506e0fe214df688a6539c85c4ca24",
+			"modified": 1500299877139,
+			"created": 1500299409945,
+			"url": "http://helios-app.eu-central-1.elasticbeanstalk.com/web/index.php/heliosapi/clients/4",
+			"name": "GET:clients/<id>",
+			"description": "",
+			"method": "GET",
+			"body": {
+				"mimeType": "application/json",
+				"text": ""
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Accept",
+					"value": "application/json",
+					"id": "pair_79604af6f03b42f9af2a867e9f77eda9"
+				},
+				{
+					"name": "Authorization",
+					"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImp0aSI6IjU5NjM1MmM0ZWQ1YjgifQ.eyJpc3MiOiJpc3N1ZXIiLCJhdWQiOiJhdWRpZW5jZSIsImp0aSI6IjU5NjM1MmM0ZWQ1YjgiLCJpYXQiOjE0OTk2ODE0NzYsIm5iZiI6MTQ5OTY4MTQ3NiwiZXhwIjoxNDk5Njg1MDc2LCJkYXRhIjp7fX0.qTn-HNcPueW-_raGBSivgLf6y5cVHrpl8wjL996eqcA",
+					"id": "pair_dfc1675cfca24cbd82e84d4c857430ab"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1500047911282.5,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		}
+	]
+}
