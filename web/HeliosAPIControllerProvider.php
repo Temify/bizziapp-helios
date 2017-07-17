@@ -45,8 +45,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             {
                 if($inputParams['nameisnotnull'] == 'true')
                 {
-                    $qb->andWhere("TabCisOrg.Nazev != ''");
-                    $qb->andWhere("TabCisOrg.DruhyNazev != ''");
+                    $qb->andWhere("(TabCisOrg.Nazev != '' || TabCisOrg.DruhyNazev != '')");
                 }
                 else
                 {
