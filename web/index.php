@@ -68,7 +68,7 @@ $app->before(function (Request $request) use($app)
 //file_put_contents('log/request.txt', $request->request->all(), FILE_APPEND);
 
     if (
-        ($method == 'POST' && strpos($contentType, 'application/json') === 0)
+        (($method == 'POST' || $method == 'PUT') && strpos($contentType, 'application/json') === 0)
         || ($method == 'GET')
     )
     {

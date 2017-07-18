@@ -7,6 +7,7 @@ JWT token must be signed by same signature which is known to server and client (
 Possible HTTP result codes over all methods:
 ```
 401 - Unauthorized - when Authorization header does not contains "Bearer " + valid JWT token signed by signing key
+404 - Not Found - method or path not found
 405 - Method Not Allowed - when requested unknown method
 415 - Unsupported Media Type - when Content-Type header is not "application/json"
 500 - Internal Server Error - when server or database error
@@ -45,7 +46,7 @@ Authorization: Bearer <JWT token>
 
 GET parameters:
 ```
-name: {optional} <string:search string> [TabCisOrg.Nazev OR TabCisOrg.DruhyNazev],
+name: {optional} <string length 1-100:search string> [TabCisOrg.Nazev OR TabCisOrg.DruhyNazev],
 nameisnotnull: {optional} <string:'true' = name is not null, 'false' = name is null, null = name can be null > [TabCisOrg.Nazev OR TabCisOrg.DruhyNazev],
 status: {optional} <string:status> ('0', '1', '2', '3') [TabCisOrg.Stav],
 listfrom: {optional} <string:number of position from complete list where result begins>,
@@ -85,6 +86,7 @@ Output JSON object:
 Possible HTTP result codes:
 ```
 200 - OK - successfull
+400 - Bad Request - when GET parameters have no correct format
 ```
 
 ### Detail of client
@@ -165,16 +167,16 @@ POST JSON object:
 {
     orgnum: {optional} <integer:organisation number - when null, 0 or missing, will be benerated automatically> [TabCisOrg.CisloOrg],
     parentid: {optional} <integer:parent client id> [TabCisOrg.NadrizenaOrg],
-    name: <string:name> [TabCisOrg.Nazev],
-    name2: <string:second name> [TabCisOrg.DruhyNazev],
-    street: <string:street> [TabCisOrg.Ulice],
-    streetorinumber: <string:orientation number> [TabCisOrg.OrCislo],
-    streetdesnumber: <string:descriptive number> [TabCisOrg.PopCislo],
-    city: <string:city> [TabCisOrg.Misto],
-    zip: {optional} <string:zip code> [TabCisOrg.PSC],
+    name: <string length 1-100:name> [TabCisOrg.Nazev],
+    name2: <string length 1-100:second name> [TabCisOrg.DruhyNazev],
+    street: <string length 1-100:street> [TabCisOrg.Ulice],
+    streetorinumber: <string length 1-15:orientation number> [TabCisOrg.OrCislo],
+    streetdesnumber: <string length 1-15:descriptive number> [TabCisOrg.PopCislo],
+    city: <string length 1-100:city> [TabCisOrg.Misto],
+    zip: {optional} <string length 1-10:zip code> [TabCisOrg.PSC],
     contact: {optional} <string:contact>  [TabCisOrg.Kontakt],
-    ic: {optional} <string:ic number> [TabCisOrg.ICO],
-    dic: {optional} <string:dic number> [TabCisOrg.DIC],
+    ic: {optional} <string length 1-20:ic number> [TabCisOrg.ICO],
+    dic: {optional} <string length 1-15:dic number> [TabCisOrg.DIC],
     status: <string:status '0' - '3'> [TabCisOrg.Stav]
 }
 ```
@@ -183,7 +185,7 @@ POST JSON object:
 Headers:
 ```
 HTTP Response 201
-Header Location: clients/<client id>
+Header Location: clients/<string:client id>
 ```
 
 Output JSON object:
@@ -204,7 +206,7 @@ Possible HTTP result codes:
 Update detail data of specific client.
 
 #### Request
-Url:\<server\>/heliosapi/clients/<client id>
+Url:`<server>/heliosapi/clients/<string:client id>`
 
 Method: PUT
 Headers:
@@ -214,22 +216,22 @@ Content-Type: application/json
 Authorization: Bearer <JWT token>
 ```
 
-POST JSON object:
+PUT JSON object:
 ```
 {
     orgnum: {optional} <integer:organisation number> [TabCisOrg.CisloOrg],
     parentid: {optional} <integer:parent client id> [TabCisOrg.NadrizenaOrg],
-    name: {optional} <string:name> [TabCisOrg.Nazev],
-    name2: {optional} <string:second name> [TabCisOrg.DruhyNazev],
-    street: {optional} <string:street> [TabCisOrg.Ulice],
-    streetorinumber: {optional} <string:orientation number> [TabCisOrg.OrCislo],
-    streetdesnumber: {optional} <string:descriptive number> [TabCisOrg.PopCislo],
-    city: {optional} <string:city> [TabCisOrg.Misto],
-    zip: {optional} <string:zip code> [TabCisOrg.PSC],
-    contact: {optional} <contact>  [TabCisOrg.Kontakt],
-    ic: {optional} <string:ic number> [TabCisOrg.ICO],
-    dic: {optional} <string:dic number> [TabCisOrg.DIC],
-    status: {optional} <string:status 0 - 3> [TabCisOrg.Stav]
+    name: {optional} <string length 1-100:name> [TabCisOrg.Nazev],
+    name2: {optional} <string length 1-100:second name> [TabCisOrg.DruhyNazev],
+    street: {optional} <string length 1-100:street> [TabCisOrg.Ulice],
+    streetorinumber: {optional} <string length 1-15:orientation number> [TabCisOrg.OrCislo],
+    streetdesnumber: {optional} <string length 1-15:descriptive number> [TabCisOrg.PopCislo],
+    city: {optional} <string length 1-100:city> [TabCisOrg.Misto],
+    zip: {optional} <string length 1-10:zip code> [TabCisOrg.PSC],
+    contact: {optional} <string length 1-40:contact>  [TabCisOrg.Kontakt],
+    ic: {optional} <string length 1-20:ic number> [TabCisOrg.ICO],
+    dic: {optional} <string length 1-15:dic number> [TabCisOrg.DIC],
+    status: {optional} <integer:status 0 - 3> [TabCisOrg.Stav]
 }
 ```
 
@@ -237,7 +239,7 @@ POST JSON object:
 Headers:
 ```
 Only when HTTP Response Code is 200:
-Header "Location" contains "clients/<client id>" [TabCisOrg.ID]
+Header "Location" contains "clients/<string:client id>" [TabCisOrg.ID]
 ```
 
 Output JSON object:
@@ -258,7 +260,7 @@ Possible HTTP result codes:
 Get list of products.
 
 #### Request
-Url:\<server\>/heliosapi/products
+Url:`<server>/heliosapi/products`
 
 Method: GET
 
@@ -270,9 +272,9 @@ Authorization: Bearer <JWT token>
 
 GET parameters:
 ```
-name: <string:product name> [TabKmenZbozi.Nazev1 OR TabKmenZbozi.Nazev2 OR TabKmenZbozi.Nazev3 OR TabKmenZbozi.Nazev3 OR TabKmenZbozi.Nazev4],
-centernumber: <string:center number> [TabKmenZbozi.KmenoveStredisko],
-regnumber: <string:registration number> [KmenoveStredisko.RegCis],
+name: <string length 1-100:product name> [TabKmenZbozi.Nazev1 OR TabKmenZbozi.Nazev2 OR TabKmenZbozi.Nazev3 OR TabKmenZbozi.Nazev3 OR TabKmenZbozi.Nazev4],
+centernumber: <string length 1-30:center number> [TabKmenZbozi.KmenoveStredisko],
+regnumber: <string length 1-30:registration number> [TabKmenZbozi.RegCis],
 listfrom: {optional} <integer:position from complete list where result begins>,
 listto: {optional} <integer:position from complete list where result ends>,
 sort: {optional} <string:by which should be ordered> ('nameasc', 'namedesc') [TabKmenZbozi.Nazev1]
@@ -303,11 +305,17 @@ Output JSON object:
 }
 ```
 
+Possible HTTP result codes:
+```
+200 - OK - successfull
+400 - Bad Request - when GET parameters have no correct format
+```
+
 ### Detail of product
-Get detail of specific product/
+Get detail of specific product.
 
 #### Request
-Url:\<server\>/heliosapi/products/\<integer:product id\>
+Url:`<server>/heliosapi/products/<string:product id>`
 
 Method: GET
 
@@ -356,4 +364,11 @@ Output JSON object:
     edcode: <string:excise duty code> [TabKmenZbozi.KodSD],
     edcalc: <float:excise duty calculation> [TabKmenZbozi.PrepocetMJSD]
 }
+```
+
+Possible HTTP result codes:
+```
+200 - OK - successfull
+400 - Bad Request - when <client id> is not a number
+404 - Not Found - when client with <client id> does not exists
 ```

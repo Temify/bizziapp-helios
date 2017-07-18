@@ -22,6 +22,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
         // Get list of clients
         $controllers->get('/clients', function (Application $app) 
         {
+            $paramsOk = true;
             $result = new \stdClass();
             $request = $app['request_stack']->getCurrentRequest();
             $inputParams = $request->query->all();
@@ -30,14 +31,19 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             $sqlParams = Array();
 
             $qb->from('TabCisOrg');
-            
+
             // Name
             if(!empty($inputParams['name']))
             {
-                $qb->andWhere('TabCisOrg.Nazev LIKE ?');
-                $sqlParams[] = '%'.$inputParams['name'].'%';
-                $qb->orWhere('TabCisOrg.DruhyNazev LIKE ?');
-                $sqlParams[] = '%'.$inputParams['name'].'%';
+                if(strlen($inputParams['name']) <= 100)
+                {
+                    $qb->andWhere('TabCisOrg.Nazev LIKE ?');
+                    $sqlParams[] = '%'.$inputParams['name'].'%';
+                    $qb->orWhere('TabCisOrg.DruhyNazev LIKE ?');
+                    $sqlParams[] = '%'.$inputParams['name'].'%';
+                }
+                else
+                    $paramsOk = false;
             }
 
             // Name is not null
@@ -47,19 +53,29 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 {
                     $qb->andWhere("(TabCisOrg.Nazev != '' || TabCisOrg.DruhyNazev != '')");
                 }
-                else
+                else if($inputParams['nameisnotnull'] == 'false')
                 {
                     $qb->andWhere("TabCisOrg.Nazev = ''");
                     $qb->andWhere("TabCisOrg.DruhyNazev = ''");
                 }
+                else
+                    $paramsOk = false;
             }
 
             // Status
             if(isset($inputParams['status']) && (!empty($inputParams['status']) || $inputParams['status'] == '0'))
             {
-                $qb->andWhere('TabCisOrg.Stav = ?');
-                $sqlParams[] = $inputParams['status'];
+                if(is_numeric($inputParams['status']))
+                {
+                    $qb->andWhere('TabCisOrg.Stav = ?');
+                    $sqlParams[] = $inputParams['status'];
+                }
+                else
+                    $paramsOk = false;
             }
+
+            if($paramsOk === false)
+                $app->abort(400, "Bad Request.");
 
             // Get total rows count
             $qb->select('COUNT(TabCisOrg.ID) AS totalcount');
@@ -83,11 +99,17 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
 
             // Limit from
             if(!empty($inputParams['listfrom']))
-                $qb->setFirstResult($inputParams['listfrom']);
+                if(is_numeric($inputParams['listfrom']))
+                    $qb->setFirstResult($inputParams['listfrom']);
+                else
+                    $paramsOk = false;
             
             // Limit to
             if(!empty($inputParams['listto']))
-                $qb->setMaxResults($inputParams['listto']);
+                if(is_numeric($inputParams['listto']))
+                    $qb->setMaxResults($inputParams['listto']);
+                else
+                    $paramsOk = false;
 
 			// Sort
 			if(!empty($inputParams['sort']))
@@ -120,10 +142,14 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
 
                     default:
                     {
+                        $paramsOk = false;
                         break;
                     }
 				}
 			}
+
+            if($paramsOk === false)
+                $app->abort(400, "Bad Request.");
 
             $app['db']->prepare($qb->getSql());
             if($app['debug']) $app['monolog']->info('DB Select client list :'.$qb->getSql());
@@ -224,6 +250,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
         // Create new client
         $controllers->post('/clients', function (Application $app) 
         {
+            $paramsOk = true;
             $newClientId = null;
             $request = $app['request_stack']->getCurrentRequest();
             $inputParams = json_decode($request->getContent(), true);
@@ -275,21 +302,34 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $app->abort(400, "Bad Request.");
 
             // Optional fields
-            if(
-                ($inputParams['parentid'] == null || is_numeric($inputParams['parentid'])) &&
-                ($inputParams['zip'] == null || strlen($inputParams['zip']) <= 10) &&
-                ($inputParams['contact'] == null || strlen($inputParams['contact']) <= 40) &&
-                ($inputParams['ic'] == null || strlen($inputParams['ic']) <= 20) &&
-                ($inputParams['dic'] == null || strlen($inputParams['dic']) <= 15)
-            )
-            {
-                $sqlParams['NadrizenaOrg'] = $inputParams['parentid'];
-                $sqlParams['PSC'] = $inputParams['zip'];
-                $sqlParams['Kontakt'] = $inputParams['contact'];
-                $sqlParams['ICO'] = $inputParams['ic'];
+            if($inputParams['parentid'] != null)
+                if(is_numeric($inputParams['parentid']))
+                    $sqlParams['NadrizenaOrg'] = $inputParams['parentid'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['zip'] != null)
+                if(strlen($inputParams['zip']) <= 10)
+                    $sqlParams['PSC'] = $inputParams['zip'];
+                else
+                    $paramsOk = false;
+            if($inputParams['contact'] != null)
+                if(strlen($inputParams['contact']) <= 40)
+                    $sqlParams['Kontakt'] = $inputParams['contact'];
+                else
+                    $paramsOk = false;
+            if($inputParams['ic'] != null)
+                if(strlen($inputParams['ic']) <= 20)
+                    $sqlParams['ICO'] = $inputParams['ic'];
+                else
+                    $paramsOk = false;
+            if($inputParams['dic'] != null)
+                if(strlen($inputParams['dic']) <= 15)
                 $sqlParams['DIC'] = $inputParams['dic'];
-            }
-            else
+                else
+                    $paramsOk = false;
+            
+            if($paramsOk === false)
                 $app->abort(400, "Bad Request.");
 
             $app['db']->insert('TabCisOrg', $sqlParams);
@@ -309,7 +349,9 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
         // Update client
         $controllers->put('/clients/{id}', function (Application $app, $id)
         {
+            $paramsOk = true;
             $request = $app['request_stack']->getCurrentRequest();
+            $inputParams = json_decode($request->getContent(), true);
 
             // Check if client exists
             $qb = $app['db']->createQueryBuilder();
@@ -327,43 +369,79 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $app->abort(404, "Not Found.");
 
             // Check data
-            $inputData = $request->request->all();
-            if(count($inputData) < 1)
+            if(count($inputParams) < 1)
                 $app->abort(204, "No Content.");
 
             // Optional fields - but must be at least one
             $sqlParams = Array();
-            if($request->get('orgnum') != null && is_numeric($request->get('orgnum')))
-                $sqlParams['CisloOrg'] = $request->get('orgnum');
-            if($request->get('name') != null && strlen($request->get('name')) <= 100)
-                $sqlParams['Nazev'] = $request->get('name');
-            if($request->get('name2') != null && strlen($request->get('name2')) <= 100)
-                $sqlParams['DruhyNazev'] = $request->get('name2');
-            if($request->get('street') != null && strlen($request->get('street')) <= 100)
-                $sqlParams['Ulice'] = $request->get('street');
-            if($request->get('streetorinumber') != null && strlen($request->get('streetorinumber')) <= 15)
-                $sqlParams['OrCislo'] = $request->get('streetorinumber');
-            if($request->get('streetdesnumber') != null && strlen($request->get('streetdesnumber')) <= 15)
-                $sqlParams['PopCislo'] = $request->get('streetdesnumber');
-            if($request->get('city') != null && strlen($request->get('city')) <= 100)
-                $sqlParams['Misto'] = $request->get('city');
-            if(is_numeric($request->get('status')))        
-                $sqlParams['Stav'] = $request->get('status');
-            if(($request->get('parentid') == null || is_numeric($request->get('parentid'))))
-                $sqlParams['NadrizenaOrg'] = $request->get('parentid');
-            if(($request->get('zip') == null || strlen($request->get('zip')) <= 10))
-                $sqlParams['PSC'] = $request->get('zip');
-            if(($request->get('contact') == null || strlen($request->get('contact')) <= 40))
-                $sqlParams['Kontakt'] = $request->get('contact');
-            if(($request->get('ic') == null || strlen($request->get('ic')) <= 20))
-                $sqlParams['ICO'] = $request->get('ic');
-            if(($request->get('dic') == null || strlen($request->get('dic')) <= 15))
-                $sqlParams['DIC'] = $request->get('dic');
+            if($inputParams['orgnum'] != null)
+                if(is_numeric($inputParams['orgnum']))
+                    $sqlParams['CisloOrg'] = $inputParams['orgnum'];
+                else
+                    $paramsOk = false;
+            if($inputParams['name'] != null)
+                if(strlen($inputParams['name']) <= 100)
+                    $sqlParams['Nazev'] = $inputParams['name'];
+                else
+                    $paramsOk = false;
+            if($inputParams['name2'] != null)
+                if(strlen($inputParams['name2']) <= 100)
+                    $sqlParams['DruhyNazev'] = $inputParams['name2'];
+                else
+                    $paramsOk = false;
+            if($inputParams['street'] != null)
+                if(strlen($inputParams['street']) <= 100)
+                    $sqlParams['Ulice'] = $inputParams['street'];
+                else
+                    $paramsOk = false;
+            if($inputParams['streetorinumber'] != null)
+                if(strlen($inputParams['streetorinumber']) <= 15)
+                    $sqlParams['OrCislo'] = $inputParams['streetorinumber'];
+                else
+                    $paramsOk = false;
+            if($inputParams['streetdesnumber'] != null)
+                if(strlen($inputParams['streetdesnumber']) <= 15)
+                    $sqlParams['PopCislo'] = $inputParams['streetdesnumber'];
+                else
+                    $paramsOk = false;
+            if($inputParams['city'] != null)
+                if(strlen($inputParams['city']) <= 100)
+                    $sqlParams['Misto'] = $inputParams['city'];
+                else
+                    $paramsOk = false;
+            if($inputParams['status'] != null)
+                if(is_numeric($inputParams['status']))
+                    $sqlParams['Stav'] = $inputParams['status'];
+                else
+                    $paramsOk = false;
+            if($inputParams['parentid'] != null)
+                if(is_numeric($inputParams['parentid']))
+                    $sqlParams['NadrizenaOrg'] = $inputParams['parentid'];
+                else
+                    $paramsOk = false;
+            if($inputParams['zip'] != null)
+                if(strlen($inputParams['zip']) <= 10)
+                    $sqlParams['PSC'] = $inputParams['zip'];
+                else
+                    $paramsOk = false;
+            if($inputParams['contact'] != null)
+                if(strlen($inputParams['contact']) <= 40)
+                    $sqlParams['Kontakt'] = $inputParams['contact'];
+                else
+                    $paramsOk = false;
+            if($inputParams['ic'] != null)
+                if(strlen($inputParams['ic']) <= 20)
+                    $sqlParams['ICO'] = $inputParams['ic'];
+                else
+                    $paramsOk = false;
+            if($inputParams['dic'] != null)
+                if(strlen($inputParams['dic']) <= 15)
+                    $sqlParams['DIC'] = $inputParams['dic'];
+                else
+                    $paramsOk = false;
 
-            // No input data received
-            print_r($sqlParams);
-            die();
-            if(count($sqlParams) < 1)
+            // No input data received or bad format data
+            if(count($sqlParams) < 1 || $paramsOk === false)
                 $app->abort(400, "Bad Request.");
 
             $app['db']->beginTransaction();
@@ -378,14 +456,17 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $app->abort(500, "Internal Server Error.");
             }
 
-            return true;
+            $response =  new Response(null, 200);
+            return $response;
         });
 
         // Get list of products
         $controllers->get('/products', function (Application $app) 
         {
+            $paramsOk = true;
             $result = new \stdClass();
             $request = $app['request_stack']->getCurrentRequest();
+            $inputParams = $request->query->all();
 
             $qb = $app['db']->createQueryBuilder();
             $sqlParams = Array();
@@ -393,31 +474,49 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             $qb->from('TabKmenZbozi');
             
             // Name
-            if(!empty($request->get('name')))
+            if(!empty($inputParams['name']))
             {
-                $qb->andWhere('TabKmenZbozi.Nazev1 LIKE ?');
-                $sqlParams[] = '%'.$request->get('name').'%';
-                $qb->orWhere('TabKmenZbozi.Nazev2 LIKE ?');
-                $sqlParams[] = '%'.$request->get('name').'%';
-                $qb->orWhere('TabKmenZbozi.Nazev3 LIKE ?');
-                $sqlParams[] = '%'.$request->get('name').'%';
-                $qb->orWhere('TabKmenZbozi.Nazev4 LIKE ?');
-                $sqlParams[] = '%'.$request->get('name').'%';
+                if(strlen($inputParams['name']) <= 100)
+                {
+                    $qb->andWhere('TabKmenZbozi.Nazev1 LIKE ?');
+                    $sqlParams[] = '%'.$inputParams['name'].'%';
+                    $qb->orWhere('TabKmenZbozi.Nazev2 LIKE ?');
+                    $sqlParams[] = '%'.$inputParams['name'].'%';
+                    $qb->orWhere('TabKmenZbozi.Nazev3 LIKE ?');
+                    $sqlParams[] = '%'.$inputParams['name'].'%';
+                    $qb->orWhere('TabKmenZbozi.Nazev4 LIKE ?');
+                    $sqlParams[] = '%'.$inputParams['name'].'%';
+                }
+                else
+                    $paramsOk = false;
             }
 
             // Center
-            if(!empty($request->get('centernumber')))
+            if(!empty($inputParams['centernumber']))
             {
-                $qb->andWhere('TabKmenZbozi.KmenoveStredisko LIKE ?');
-                $sqlParams[] = '%'.$request->get('centernumber').'%';
+                if(strlen($inputParams['centernumber']) <= 30)
+                {
+                    $qb->andWhere('TabKmenZbozi.KmenoveStredisko LIKE ?');
+                    $sqlParams[] = '%'.$inputParams['centernumber'].'%';
+                }
+                else
+                    $paramsOk = false;
             }
 
             // Registration number
-            if(!empty($request->get('regnumber')))
+            if(!empty($inputParams['regnumber']))
             {
-                $qb->andWhere('TabKmenZbozi.RegCis LIKE ?');
-                $sqlParams[] = '%'.$request->get('regnumber').'%';
+                if(strlen($inputParams['regnumber']) <= 30)
+                {
+                    $qb->andWhere('TabKmenZbozi.RegCis LIKE ?');
+                    $sqlParams[] = '%'.$inputParams['regnumber'].'%';
+                }
+                else
+                    $paramsOk = false;
             }
+
+            if($paramsOk === false)
+                $app->abort(400, "Bad Request.");
 
             // Get total rows count
             $qb->select('COUNT(TabKmenZbozi.ID) AS totalcount');
@@ -439,17 +538,23 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                         );
 
             // Limit from
-            if(!empty($request->get('listfrom')))
-                $qb->setFirstResult($request->get('listfrom'));
+            if(!empty($inputParams['listfrom']))
+                if(is_numeric($inputParams['listfrom']))
+                    $qb->setFirstResult($inputParams['listfrom']);
+                else
+                    $paramsOk = false;
             
             // Limit to
-            if(!empty($request->get('listto')))
-                $qb->setMaxResults($request->get('listto'));
+            if(!empty($inputParams['listto']))
+                if(is_numeric($inputParams['listto']))
+                    $qb->setMaxResults($inputParams['listto']);
+                else
+                    $paramsOk = false;
 
 			// Sort
-			if(!empty($request->get('sort')))
+			if(!empty($inputParams['sort']))
 			{
-				switch($request->get('sort'))
+				switch($inputParams['sort'])
 				{
 					case 'nameasc':
 					{
@@ -465,10 +570,14 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
 
 					default:
 					{
+                        $paramsOk = false;
 						break;
 					}
 				}
 			}
+
+            if($paramsOk === false)
+                $app->abort(400, "Bad Request.");
 
             $app['db']->prepare($qb->getSql());
             if($app['debug']) $app['monolog']->info('DB Select client list :'.$qb->getSql());
@@ -496,6 +605,9 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
         // Get detail of product
         $controllers->get('/products/{id}', function (Application $app, $id) 
         {
+            if(empty($id) || !is_numeric($id))
+                $app->abort(400, "Bad Request.");
+
             $result = new \stdClass();
             $request = $app['request_stack']->getCurrentRequest();   
 
@@ -538,6 +650,9 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             $app['db']->prepare($qb->getSql());
             if($app['debug']) $app['monolog']->info('DB Select product detail :'.$qb->getSql());
             $listData = $app['db']->fetchAll($qb->getSql(), $sqlParams);
+
+            if(count($listData) < 1)
+                $app->abort(404, "Not Found.");
 
             foreach($listData as $row)
             {
