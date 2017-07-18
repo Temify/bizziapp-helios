@@ -166,7 +166,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->email = '';
                 $newRow->phone = '';
                 $newRow->contact = $row['Kontakt'];
-                $newRow->web = '';
+                $newRow->website = '';
                 $newRow->status = (int)$row['Stav'];
                 $result->rows[] = $newRow;
             }
@@ -237,7 +237,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->contact = $row['Kontakt'];
                 $newRow->ic = '';
                 $newRow->dic = '';
-                $newRow->web = '';
+                $newRow->website = '';
                 $newRow->status = (int)$row['Stav'];
                 $result = $newRow;
             }

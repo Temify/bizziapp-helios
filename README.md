@@ -75,7 +75,7 @@ Output JSON object:
             email: <string:email> [],
             phone: <string:phone number> [],
             contact: <string:contact>  [TabCisOrg.Kontakt],
-            web: <string:web URL> [],
+            website: <string:web URL> [],
             status: <integer:status 0 - 3> [TabCisOrg.Stav]
         }
     },
