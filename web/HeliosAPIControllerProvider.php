@@ -349,6 +349,9 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
         // Update client
         $controllers->put('/clients/{id}', function (Application $app, $id)
         {
+            if(empty($id) || !is_numeric($id))
+                $app->abort(400, "Bad Request.");
+
             $paramsOk = true;
             $request = $app['request_stack']->getCurrentRequest();
             $inputParams = json_decode($request->getContent(), true);
@@ -446,6 +449,53 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
 
             $app['db']->beginTransaction();
             $result = $app['db']->update('TabCisOrg', $sqlParams, array('ID' => $id));
+
+            // If exactly 1 row was affected            
+            if($result === 1)
+                $app['db']->commit();
+            else
+            {
+                $app['db']->rollBack();
+                $app->abort(500, "Internal Server Error.");
+            }
+
+            $response =  new Response(null, 200);
+            return $response;
+        });
+
+        // Delete all clients - method not allowed
+        $controllers->delete('/clients', function (Application $app)
+        {
+            $app->abort(405, "Method Not Allowed.");
+        });
+
+        // Delete client
+        $controllers->delete('/clients/{id}', function (Application $app, $id)
+        {
+            if(empty($id) || !is_numeric($id))
+                $app->abort(400, "Bad Request.");
+
+            $paramsOk = true;
+            $request = $app['request_stack']->getCurrentRequest();
+            $inputParams = json_decode($request->getContent(), true);
+
+            // Check if client exists
+            $qb = $app['db']->createQueryBuilder();
+            $qb->select(
+                        'TabCisOrg.ID',
+                        'TabCisOrg.CisloOrg',
+                        'TabCisOrg.Stav'
+                        );
+            $qb->from('TabCisOrg');            
+            $qb->andWhere('TabCisOrg.ID = ?');
+            $app['db']->prepare($qb->getSql());
+            if($app['debug']) $app['monolog']->info('DB Select client by ID :'.$qb->getSql());
+            $clientData = $app['db']->fetchAssoc($qb->getSql(), array($id));
+            if(!is_array($clientData) || count($clientData) <= 0)
+                $app->abort(404, "Not Found.");
+
+            $app['db']->beginTransaction();
+            $result = $app['db']->update('TabCisOrg', array('Stav' => 1), array('ID' => $id));
 
             // If exactly 1 row was affected            
             if($result === 1)

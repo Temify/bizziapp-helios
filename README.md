@@ -182,9 +182,11 @@ POST JSON object:
 ```
 
 #### Response
+HTTP Response Code: 201
+
 Headers:
 ```
-HTTP Response 201
+Content-Type: application/json
 Header Location: clients/<string:client id>
 ```
 
@@ -197,7 +199,7 @@ Output JSON object:
 
 Possible HTTP result codes:
 ```
-200 - OK - successfull
+201 - Created - successfull
 400 - Bad Request - when input parameters are not correct
 409 - Conflict - when client with orgnum already exists
 ```
@@ -209,6 +211,7 @@ Update detail data of specific client.
 Url:`<server>/heliosapi/clients/<string:client id>`
 
 Method: PUT
+
 Headers:
 ```
 Accept: application/json
@@ -236,10 +239,11 @@ PUT JSON object:
 ```
 
 #### Response
+HTTP Response Code: 200
+
 Headers:
 ```
-Only when HTTP Response Code is 200:
-Header "Location" contains "clients/<string:client id>" [TabCisOrg.ID]
+Content-Type: application/json
 ```
 
 Output JSON object:
@@ -253,7 +257,45 @@ Possible HTTP result codes:
 400 - Bad Request - input data not valid
 404 - Not Found - <client id> not found
 405 - Method Not Allowed - when <client id> is missing
-500 - Internal Server Error - when update affected != 1 rows, call also rollback
+500 - Internal Server Error - when update affected != 1 rows, calls also rollback
+```
+
+### Delete client
+Delete specific client.
+
+#### Request
+Url:`<server>/heliosapi/clients/<string:client id>`
+
+Method: DELETE
+
+Headers:
+```
+Accept: application/json
+Authorization: Bearer <JWT token>
+```
+
+DELETE parameters:
+
+Empty
+
+#### Response
+HTTP Response Code: 200
+
+Headers:
+```
+Content-Type: application/json
+```
+
+Output JSON object:
+
+Empty
+
+Possible HTTP result codes:
+```
+200 - OK - delete successfull
+404 - Not Found - <client id> not found
+405 - Method Not Allowed - when <client id> is missing
+500 - Internal Server Error - when delete affected != 1 rows, calls also rollback
 ```
 
 ### List of products

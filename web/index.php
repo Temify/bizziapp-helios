@@ -69,7 +69,7 @@ $app->before(function (Request $request) use($app)
 
     if (
         (($method == 'POST' || $method == 'PUT') && strpos($contentType, 'application/json') === 0)
-        || ($method == 'GET')
+        || ($method == 'GET' || $method == 'DELETE')
     )
     {
      	$token = substr($authorization, 7);
