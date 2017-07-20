@@ -1,7 +1,7 @@
 {
 	"_type": "export",
 	"__export_format": 3,
-	"__export_date": "2017-07-18T12:33:13.435Z",
+	"__export_date": "2017-07-20T11:21:21.613Z",
 	"__export_source": "insomnia.desktop.app:v5.6.3",
 	"resources": [
 		{
@@ -169,7 +169,7 @@
 		{
 			"_id": "req_9af6905e287c4afba1798df55c6c07d8",
 			"parentId": "fld_c1fa6b306d3c4029944ab8e362ef834f",
-			"modified": 1500376093375,
+			"modified": 1500549674676,
 			"created": 1500299341565,
 			"url": "http://helios-app.eu-central-1.elasticbeanstalk.com/web/index.php/heliosapi/clients",
 			"name": "POST:clients - HTTP 201",
@@ -177,7 +177,7 @@
 			"method": "POST",
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n\t\t\"name\": \"jmeno1\",\n    \"name2\": \"jmeno2\",\n    \"street\": \"ulice\",\n    \"streetorinumber\": \"orientacnicislo\",\n    \"streetdesnumber\": \"popisnecislo\",\n    \"city\": \"mesto\",\n    \"status\": \"0\"\n}"
+				"text": "{\n\t\t\"name\": \"jmeno1\",\n    \"street\": \"ulice\",\n    \"streetorinumber\": \"orientacnicislo\",\n    \"streetdesnumber\": \"popisnecislo\",\n    \"city\": \"mesto\",\n\t  \"ic\": \"12345678901234567890\"\n}"
 			},
 			"parameters": [],
 			"headers": [
@@ -528,7 +528,7 @@
 		{
 			"_id": "req_d2167eecb12349258260848643e18c4f",
 			"parentId": "fld_cda6d8d5a396499abb1afd3f5065e981",
-			"modified": 1500376006557,
+			"modified": 1500549503650,
 			"created": 1500373273922,
 			"url": "http://localhost:8080/heliosapi/clients",
 			"name": "POST:clients - HTTP 201",
@@ -536,7 +536,7 @@
 			"method": "POST",
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n\t\t\"name\": \"jmeno1\",\n    \"name2\": \"jmeno2\",\n    \"street\": \"ulice\",\n    \"streetorinumber\": \"orientacnicislo\",\n    \"streetdesnumber\": \"popisnecislo\",\n    \"city\": \"mesto\",\n    \"status\": \"0\",\n\t  \"ic\": \"12345678901234567890\"\n}"
+				"text": "{\n\t\t\"name\": \"jmeno1\",\n    \"street\": \"ulice\",\n    \"streetorinumber\": \"orientacnicislo\",\n    \"streetdesnumber\": \"popisnecislo\",\n    \"city\": \"mesto\",\n\t  \"ic\": \"12345678901234567890\"\n}"
 			},
 			"parameters": [],
 			"headers": [

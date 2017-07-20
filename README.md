@@ -168,7 +168,7 @@ POST JSON object:
     orgnum: {optional} <integer:organisation number - when null, 0 or missing, will be benerated automatically> [TabCisOrg.CisloOrg],
     parentid: {optional} <integer:parent client id> [TabCisOrg.NadrizenaOrg],
     name: <string length 1-100:name> [TabCisOrg.Nazev],
-    name2: <string length 1-100:second name> [TabCisOrg.DruhyNazev],
+    name2: {optional} <string length 1-100:second name> [TabCisOrg.DruhyNazev],
     street: <string length 1-100:street> [TabCisOrg.Ulice],
     streetorinumber: <string length 1-15:orientation number> [TabCisOrg.OrCislo],
     streetdesnumber: <string length 1-15:descriptive number> [TabCisOrg.PopCislo],
@@ -177,7 +177,7 @@ POST JSON object:
     contact: {optional} <string:contact>  [TabCisOrg.Kontakt],
     ic: {optional} <string length 1-20:ic number> [TabCisOrg.ICO],
     dic: {optional} <string length 1-15:dic number> [TabCisOrg.DIC],
-    status: <string:status '0' - '3'> [TabCisOrg.Stav]
+    status: {optional} <string:status '0' - '3' - default '0'> [TabCisOrg.Stav]
 }
 ```
 

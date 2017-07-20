@@ -166,7 +166,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->email = '';
                 $newRow->phone = '';
                 $newRow->contact = $row['Kontakt'];
-                $newRow->website = '';
+                $newRow->website = $row['web'];
                 $newRow->status = (int)$row['Stav'];
                 $result->rows[] = $newRow;
             }
@@ -259,7 +259,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             // Check data
             $sqlParams = Array();
 
-            // Generate orgnum
+            // Default value: orgnum
             if(empty($inputParams['orgnum']))
             {
                 $sql = "DECLARE @CisloOrg INT;EXEC @CisloOrg=dbo.hp_NajdiPrvniVolny 'TabCisOrg','CisloOrg',1,2147483647,'',1,1;SELECT @CisloOrg AS neworgnum;";
@@ -281,27 +281,36 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             if(
                 $inputParams['orgnum'] != null && is_numeric($inputParams['orgnum']) &&
                 $inputParams['name'] != null && strlen($inputParams['name']) <= 100 &&
-                $inputParams['name2'] != null && strlen($inputParams['name2']) <= 100 &&
                 $inputParams['street'] != null && strlen($inputParams['street']) <= 100 &&
                 $inputParams['streetorinumber'] != null && strlen($inputParams['streetorinumber']) <= 15 &&
                 $inputParams['streetdesnumber'] != null && strlen($inputParams['streetdesnumber']) <= 15 &&
-                $inputParams['city'] != null && strlen($inputParams['city']) <= 100 &&
-                is_numeric($inputParams['status'])
+                $inputParams['city'] != null && strlen($inputParams['city']) <= 100
                 )
             {
                 $sqlParams['CisloOrg'] = $inputParams['orgnum'];
                 $sqlParams['Nazev'] = $inputParams['name'];
-                $sqlParams['DruhyNazev'] = $inputParams['name2'];
                 $sqlParams['Ulice'] = $inputParams['street'];
                 $sqlParams['OrCislo'] = $inputParams['streetorinumber'];
                 $sqlParams['PopCislo'] = $inputParams['streetdesnumber'];
                 $sqlParams['Misto'] = $inputParams['city'];
-                $sqlParams['Stav'] = $inputParams['status'];
             }
             else
                 $app->abort(400, "Bad Request.");
 
             // Optional fields
+
+            if($inputParams['status'] != null)
+                if(is_numeric($inputParams['status']))
+                    $sqlParams['Stav'] = $inputParams['status'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['name2'] != null)
+                if(strlen($inputParams['name2']) <= 100)
+                    $sqlParams['DruhyNazev'] = $inputParams['name2'];
+                else
+                    $paramsOk = false;
+
             if($inputParams['parentid'] != null)
                 if(is_numeric($inputParams['parentid']))
                     $sqlParams['NadrizenaOrg'] = $inputParams['parentid'];
@@ -332,8 +341,19 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             if($paramsOk === false)
                 $app->abort(400, "Bad Request.");
 
-            $app['db']->insert('TabCisOrg', $sqlParams);
+
+            $app['db']->beginTransaction();
+            $result = $app['db']->insert('TabCisOrg', $sqlParams);
             $newClientId = $app['db']->lastInsertId();
+
+            // If exactly 1 row was affected            
+            if($result === 1)
+                $app['db']->commit();
+            else
+            {
+                $app['db']->rollBack();
+                $app->abort(500, "Internal Server Error.");
+            }
 
             $response =  new Response(json_encode(array('id' => (int)$newClientId)), 201);
             $response->headers->set('Location', 'clients/'.$newClientId);
