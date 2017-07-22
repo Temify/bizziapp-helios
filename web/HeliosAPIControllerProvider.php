@@ -271,7 +271,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
 
             // Check if client already exists
             $sql = 'SELECT 1 AS clientexists FROM TabCisOrg WHERE TabCisOrg.CisloOrg = '.$inputParams['orgnum'];
-            if($app['debug']) $app['monolog']->info('DB Cseck if client with orgnum exists:'.$sql);
+            if($app['debug']) $app['monolog']->info('DB Check if client with orgnum exists:'.$sql);
             $queryResult = $app['db']->executeQuery($sql);
             $clientExists = $queryResult->fetch();
             if($clientExists['clientexists'] == 1)
@@ -298,7 +298,6 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $app->abort(400, "Bad Request.");
 
             // Optional fields
-
             if($inputParams['status'] != null)
                 if(is_numeric($inputParams['status']))
                     $sqlParams['Stav'] = $inputParams['status'];
@@ -604,7 +603,8 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                         'TabKmenZbozi.Nazev2',
                         'TabKmenZbozi.Nazev3',
                         'TabKmenZbozi.Nazev4',
-                        'TabKmenZbozi.SKP'
+                        'TabKmenZbozi.SKP',
+                        'TabKmenZbozi.Blokovano'
                         );
 
             // Limit from
@@ -664,6 +664,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->name3 = $row['Nazev3'];
                 $newRow->name4 = $row['Nazev4'];
                 $newRow->skp = $row['SKP'];
+                $newRow->blocked = (int)$row['Blokovano'];
                 $result->rows[] = $newRow;
             }
 
@@ -693,8 +694,9 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             // Get data
             $qb->select(
                         'TabKmenZbozi.ID',
-                        'TabKmenZbozi.SkupZbo' ,
+                        'TabKmenZbozi.SkupZbo',
                         'TabKmenZbozi.RegCis',
+                        'TabKmenZbozi.DruhSkladu',
                         'TabKmenZbozi.Nazev1',
                         'TabKmenZbozi.Nazev2',
                         'TabKmenZbozi.Nazev3',
@@ -714,7 +716,8 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                         'TabKmenZbozi.SazbaSDVystup',
                         'TabKmenZbozi.MJSD',
                         'TabKmenZbozi.KodSD',
-                        'TabKmenZbozi.PrepocetMJSD'
+                        'TabKmenZbozi.PrepocetMJSD',
+                        'TabKmenZbozi.Blokovano'
                         );
 
             $app['db']->prepare($qb->getSql());
@@ -730,13 +733,13 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->id = (int)$row['ID'];
                 $newRow->group = $row['SkupZbo'];
                 $newRow->regnum = $row['RegCis'];
+                $newRow->storagetype = $row['DruhSkladu'];
                 $newRow->name = $row['Nazev1'];
                 $newRow->name2 = $row['Nazev2'];
                 $newRow->name3 = $row['Nazev3'];
                 $newRow->name4 = $row['Nazev4'];
                 $newRow->skp = $row['SKP'];
                 $newRow->range = $row['IdSortiment'];
-                $newRow->vintage = '';
                 $newRow->notice = $row['Upozorneni'];
                 $newRow->note = $row['Poznamka'];
                 $newRow->muevidence = $row['MJEvidence'];
@@ -751,6 +754,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->mued = $row['MJSD'];
                 $newRow->edcode = $row['KodSD'];
                 $newRow->edcalc = $row['PrepocetMJSD'];
+                $newRow->blocked = (int)$row['Blokovano'];
                 $result = $newRow;
             }
 
@@ -758,6 +762,428 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
 	        if($app['debug']) $app['monolog']->info('Response: data:'.json_encode($result));
             return $app->json($result);
         });
+
+        // Create new product
+        $controllers->post('/products', function (Application $app) 
+        {
+            $paramsOk = true;
+            $newProductId = null;
+            $request = $app['request_stack']->getCurrentRequest();
+            $inputParams = json_decode($request->getContent(), true);
+            $qb = $app['db']->createQueryBuilder();
+
+            // Check data
+            $sqlParams = Array();
+
+            if(empty($inputParams['storagetype']) && $inputParams['storagetype'] != '0')
+                $inputParams['storagetype'] = 1;
+
+            if(empty($inputParams['blocked']))
+                $inputParams['blocked'] = 0;
+
+            // Check if product already exists
+            $sql = 'SELECT 1 AS productexists FROM TabKmenZbozi WHERE TabKmenZbozi.RegCis = \''.$inputParams['regnum'].'\'';
+            if($app['debug']) $app['monolog']->info('DB Check if product with regnum exists:'.$sql);
+            $queryResult = $app['db']->executeQuery($sql);
+            $clientExists = $queryResult->fetch();
+            if($clientExists['productexists'] == 1)
+                $app->abort(409, "Conflict.");
+
+            // Required fields
+            if(
+                $inputParams['group'] != null && strlen($inputParams['group']) <= 3 &&
+                $inputParams['regnum'] != null && strlen($inputParams['regnum']) <= 30 &&
+                $inputParams['name'] != null && strlen($inputParams['name']) <= 100 &&
+                $inputParams['storagetype'] != null && is_numeric($inputParams['storagetype']) &&
+                ($inputParams['blocked'] != null || $inputParams['blocked'] == 0) && is_numeric($inputParams['blocked'])
+                )
+            {
+                $sqlParams['SkupZbo'] = $inputParams['group'];
+                $sqlParams['RegCis'] = $inputParams['regnum'];
+                $sqlParams['Nazev1'] = $inputParams['name'];
+                $sqlParams['DruhSkladu'] = $inputParams['storagetype'];
+                $sqlParams['Blokovano'] = $inputParams['blocked'];
+            }
+            else
+                $app->abort(400, "Bad Request.");
+
+            // Optional fields
+            if($inputParams['name2'] != null)
+                if(strlen($inputParams['name2']) <= 100)
+                    $sqlParams['Nazev2'] = $inputParams['name2'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['name3'] != null)
+                if(strlen($inputParams['name3']) <= 100)
+                    $sqlParams['Nazev3'] = $inputParams['name3'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['name4'] != null)
+                if(strlen($inputParams['name4']) <= 100)
+                    $sqlParams['Nazev4'] = $inputParams['name4'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['skp'] != null)
+                if(strlen($inputParams['skp']) <= 50)
+                    $sqlParams['SKP'] = $inputParams['skp'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['range'] != null)
+                if(is_numeric($inputParams['range']))
+                    $sqlParams['IdSortiment'] = $inputParams['range'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['notice'] != null)
+                if(strlen($inputParams['notice']) <= 255)
+                    $sqlParams['Upozorneni'] = $inputParams['notice'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['note'] != null)
+                if(strlen($inputParams['note']) <= 1073741823)
+                    $sqlParams['Poznamka'] = $inputParams['note'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['muevidence'] != null)
+                if(strlen($inputParams['muevidence']) <= 10)
+                    $sqlParams['MJEvidence'] = $inputParams['muevidence'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['mustocktaking'] != null)
+                if(strlen($inputParams['mustocktaking']) <= 10)
+                    $sqlParams['MJInventura'] = $inputParams['mustocktaking'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['muinput'] != null)
+                if(strlen($inputParams['muinput']) <= 10)
+                    $sqlParams['MJVstup'] = $inputParams['muinput'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['muoutput'] != null)
+                if(strlen($inputParams['muoutput']) <= 10)
+                    $sqlParams['MJVystup'] = $inputParams['muoutput'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['vatinput'] != null)
+                if(is_numeric($inputParams['vatinput']))
+                    $sqlParams['SazbaDPHVstup'] = $inputParams['vatinput'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['vatoutput'] != null)
+                if(is_numeric($inputParams['vatoutput']))
+                    $sqlParams['SazbaDPHVystup'] = $inputParams['vatoutput'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['pdpcode'] != null)
+                if(is_numeric($inputParams['pdpcode']))
+                    $sqlParams['IDKodPDP'] = $inputParams['pdpcode'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['edinput'] != null)
+                if(is_numeric($inputParams['edinput']))
+                    $sqlParams['SazbaSDVstup'] = $inputParams['edinput'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['edoutput'] != null)
+                if(is_numeric($inputParams['edoutput']))
+                    $sqlParams['SazbaSDVystup'] = $inputParams['edoutput'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['mued'] != null)
+                if(strlen($inputParams['mued']) <= 10)
+                    $sqlParams['MJSD'] = $inputParams['mued'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['edcode'] != null)
+                if(strlen($inputParams['edcode']) <= 10)
+                    $sqlParams['KodSD'] = $inputParams['edcode'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['edcalc'] != null)
+                if(is_numeric($inputParams['edcalc']))
+                    $sqlParams['PrepocetMJSD'] = $inputParams['edcalc'];
+                else
+                    $paramsOk = false;
+            
+            if($paramsOk === false)
+                $app->abort(400, "Bad Request.");
+
+            $app['db']->beginTransaction();
+            $result = $app['db']->insert('TabKmenZbozi', $sqlParams); 
+            $newProductId = $app['db']->lastInsertId();
+
+            // If exactly 1 row was affected            
+            if($result === 1)
+                $app['db']->commit();
+            else
+            {
+                $app['db']->rollBack();
+                $app->abort(500, "Internal Server Error.");
+            }
+
+            $response =  new Response(json_encode(array('id' => (int)$newProductId)), 201);
+            $response->headers->set('Location', 'products/'.$newProductId);
+            return $response;
+        });
+
+        // Update all products - method not allowed
+        $controllers->put('/products', function (Application $app)
+        {
+            $app->abort(405, "Method Not Allowed.");
+        });
+        
+        // Update product
+        $controllers->put('/products/{id}', function (Application $app, $id) 
+        {
+            $paramsOk = true;
+            $request = $app['request_stack']->getCurrentRequest();
+            $inputParams = json_decode($request->getContent(), true);
+            $qb = $app['db']->createQueryBuilder();
+
+            // Check data
+            $sqlParams = Array();
+
+
+            // Check if product exists
+            $qb = $app['db']->createQueryBuilder();
+            $qb->select(
+                        'TabKmenZbozi.ID'
+                        );
+            $qb->from('TabKmenZbozi');            
+            $qb->andWhere('TabKmenZbozi.ID = ?');
+            $app['db']->prepare($qb->getSql());
+            if($app['debug']) $app['monolog']->info('DB Select product by ID :'.$qb->getSql());
+            $productData = $app['db']->fetchAssoc($qb->getSql(), array($id));
+            if(!is_array($productData) || count($productData) <= 0)
+                $app->abort(404, "Not Found.");
+
+            // Optional fields
+            if($inputParams['group'] != null)
+                if(strlen($inputParams['group']) <= 3)
+                    $sqlParams['SkupZbo'] = $inputParams['group'];
+                else
+                    $paramsOk = false;
+             
+            if($inputParams['regnum'] != null)
+                if(strlen($inputParams['regnum']) <= 30)
+                    $sqlParams['RegCis'] = $inputParams['regnum'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['name'] != null)
+                if(strlen($inputParams['name']) <= 100)
+                    $sqlParams['Nazev1'] = $inputParams['name'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['storagetype'] != null)
+                if(is_numeric($inputParams['storagetype']))
+                    $sqlParams['DruhSkladu'] = $inputParams['storagetype'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['name2'] != null)
+                if(strlen($inputParams['name2']) <= 100)
+                    $sqlParams['Nazev2'] = $inputParams['name2'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['name3'] != null)
+                if(strlen($inputParams['name3']) <= 100)
+                    $sqlParams['Nazev3'] = $inputParams['name3'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['name4'] != null)
+                if(strlen($inputParams['name4']) <= 100)
+                    $sqlParams['Nazev4'] = $inputParams['name4'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['skp'] != null)
+                if(strlen($inputParams['skp']) <= 50)
+                    $sqlParams['SKP'] = $inputParams['skp'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['range'] != null)
+                if(is_numeric($inputParams['range']))
+                    $sqlParams['IdSortiment'] = $inputParams['range'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['notice'] != null)
+                if(strlen($inputParams['notice']) <= 255)
+                    $sqlParams['Upozorneni'] = $inputParams['notice'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['note'] != null)
+                if(strlen($inputParams['note']) <= 1073741823)
+                    $sqlParams['Poznamka'] = $inputParams['note'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['muevidence'] != null)
+                if(strlen($inputParams['muevidence']) <= 10)
+                    $sqlParams['MJEvidence'] = $inputParams['muevidence'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['mustocktaking'] != null)
+                if(strlen($inputParams['mustocktaking']) <= 10)
+                    $sqlParams['MJInventura'] = $inputParams['mustocktaking'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['muinput'] != null)
+                if(strlen($inputParams['muinput']) <= 10)
+                    $sqlParams['MJVstup'] = $inputParams['muinput'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['muoutput'] != null)
+                if(strlen($inputParams['muoutput']) <= 10)
+                    $sqlParams['MJVystup'] = $inputParams['muoutput'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['vatinput'] != null)
+                if(is_numeric($inputParams['vatinput']))
+                    $sqlParams['SazbaDPHVstup'] = $inputParams['vatinput'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['vatoutput'] != null)
+                if(is_numeric($inputParams['vatoutput']))
+                    $sqlParams['SazbaDPHVystup'] = $inputParams['vatoutput'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['pdpcode'] != null)
+                if(is_numeric($inputParams['pdpcode']))
+                    $sqlParams['IDKodPDP'] = $inputParams['pdpcode'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['edinput'] != null)
+                if(is_numeric($inputParams['edinput']))
+                    $sqlParams['SazbaSDVstup'] = $inputParams['edinput'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['edoutput'] != null)
+                if(is_numeric($inputParams['edoutput']))
+                    $sqlParams['SazbaSDVystup'] = $inputParams['edoutput'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['mued'] != null)
+                if(strlen($inputParams['mued']) <= 10)
+                    $sqlParams['MJSD'] = $inputParams['mued'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['edcode'] != null)
+                if(strlen($inputParams['edcode']) <= 10)
+                    $sqlParams['KodSD'] = $inputParams['edcode'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['edcalc'] != null)
+                if(is_numeric($inputParams['edcalc']))
+                    $sqlParams['PrepocetMJSD'] = $inputParams['edcalc'];
+                else
+                    $paramsOk = false;
+
+            if(($inputParams['blocked'] != null || $inputParams['blocked'] == 0))
+                if(is_numeric($inputParams['blocked']))
+                    $sqlParams['Blokovano'] = $inputParams['blocked'];
+                else
+                    $paramsOk = false;
+
+            // No input data received or bad format data
+            if(count($sqlParams) < 1 || $paramsOk === false)
+                $app->abort(400, "Bad Request.");
+
+            $app['db']->beginTransaction();
+            $result = $app['db']->update('TabKmenZbozi', $sqlParams, array('ID' => $id));
+
+            // If exactly 1 row was affected            
+            if($result === 1)
+                $app['db']->commit();
+            else
+            {
+                $app['db']->rollBack();
+                $app->abort(500, "Internal Server Error.");
+            }
+
+            $response =  new Response(null, 200);
+            return $response;
+        });
+
+        // Delete all products - method not allowed
+        $controllers->delete('/products', function (Application $app)
+        {
+            $app->abort(405, "Method Not Allowed.");
+        });
+
+        // Delete product
+        $controllers->delete('/products/{id}', function (Application $app, $id)
+        {
+            if(empty($id) || !is_numeric($id))
+                $app->abort(400, "Bad Request.");
+
+            $paramsOk = true;
+            $request = $app['request_stack']->getCurrentRequest();
+            $inputParams = json_decode($request->getContent(), true);
+
+            // Check if product exists
+            $qb = $app['db']->createQueryBuilder();
+            $qb->select(
+                        'TabKmenZbozi.ID'
+                        );
+            $qb->from('TabKmenZbozi');            
+            $qb->andWhere('TabKmenZbozi.ID = ?');
+            $app['db']->prepare($qb->getSql());
+            if($app['debug']) $app['monolog']->info('DB Select product by ID :'.$qb->getSql());
+            $productData = $app['db']->fetchAssoc($qb->getSql(), array($id));
+            if(!is_array($productData) || count($productData) <= 0)
+                $app->abort(404, "Not Found.");
+
+            $app['db']->beginTransaction();
+            $result = $app['db']->update('TabKmenZbozi', array('Blokovano' => 1), array('ID' => $id));
+
+            // If exactly 1 row was affected            
+            if($result === 1)
+                $app['db']->commit();
+            else
+            {
+                $app['db']->rollBack();
+                $app->abort(500, "Internal Server Error.");
+            }
+
+            $response =  new Response(null, 200);
+            return $response;
+        });
+
         return $controllers;
     }
 }

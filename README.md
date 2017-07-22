@@ -48,7 +48,7 @@ GET parameters:
 ```
 name: {optional} <string length 1-100:search string> [TabCisOrg.Nazev OR TabCisOrg.DruhyNazev],
 nameisnotnull: {optional} <string:'true' = name is not null, 'false' = name is null, null = name can be null > [TabCisOrg.Nazev OR TabCisOrg.DruhyNazev],
-status: {optional} <string:status> ('0', '1', '2', '3') [TabCisOrg.Stav],
+status: {optional} <string:status> ('0' = active, '1' = blocked, '2' = disabled, '3' = potential) [TabCisOrg.Stav],
 listfrom: {optional} <string:number of position from complete list where result begins>,
 listto: {optional} <string:number of position from complete list where result ends>,
 sort: {optional} <string:by which should be ordered> ('nameasc', 'namedesc', 'ideasc', 'iddesc') [TabCisOrg.Nazev]
@@ -136,7 +136,7 @@ Output JSON object:
     ic: <string:ic number> [TabCisOrg.ICO],
     dic: <string:dic number> [TabCisOrg.DIC],
     website: <string:web URL> [],
-    status: <integer:status 0 - 3> [TabCisOrg.Stav]
+    status: <integer:status 0 = active, 1 = blocked, 2 = disabled, 3 = potential> [TabCisOrg.Stav]
 }
 ```
 
@@ -177,7 +177,7 @@ POST JSON object:
     contact: {optional} <string:contact>  [TabCisOrg.Kontakt],
     ic: {optional} <string length 1-20:ic number> [TabCisOrg.ICO],
     dic: {optional} <string length 1-15:dic number> [TabCisOrg.DIC],
-    status: {optional} <string:status '0' - '3' - default '0'> [TabCisOrg.Stav]
+    status: {optional} <string:status '0' = active, '1' = blocked, '2' = disabled, '3' = potential - default '0'> [TabCisOrg.Stav]
 }
 ```
 
@@ -234,7 +234,7 @@ PUT JSON object:
     contact: {optional} <string length 1-40:contact>  [TabCisOrg.Kontakt],
     ic: {optional} <string length 1-20:ic number> [TabCisOrg.ICO],
     dic: {optional} <string length 1-15:dic number> [TabCisOrg.DIC],
-    status: {optional} <integer:status 0 - 3> [TabCisOrg.Stav]
+    status: {optional} <integer:status 0 = active, 1 = blocked, 2 = disabled, 3 = potential> [TabCisOrg.Stav]
 }
 ```
 
@@ -340,7 +340,8 @@ Output JSON object:
             name2: <string:second product name> [TabKmenZbozi.Nazev2],
             name3: <string:third product name> [TabKmenZbozi.Nazev3],
             name4: <string:fourth product name> [TabKmenZbozi.Nazev4],
-            skp: <string:skp> [TabKmenZbozi.SKP]
+            skp: <string:skp> [TabKmenZbozi.SKP],
+            blocked: <integer:product is active or archived 0 = active, 1 = archived> [TabKmenZbozi.Blokovano]
         }
     },
     totalrows: <integer:total count of rows of whole list from which is listfrom and listto returned>
@@ -384,13 +385,13 @@ Output JSON object:
     id: <integer:product id> [TabKmenZbozi.ID],
     group: <string:group id> [TabKmenZbozi.SkupZbo],
     regnum: <string:registration number> [TabKmenZbozi.RegCis],
+    storagetype: {optional} <integer:type of storage 0 = service, 1 = global configuration, 2 = FIFO, 3 = averages, 4 = customs warehouse> [TabKmenZbozi.DruhSkladu],
     name: <string:first product name> [TabKmenZbozi.Nazev1],
     name2: <string:second product name> [TabKmenZbozi.Nazev2],
     name3: <string:third product name> [TabKmenZbozi.Nazev3],
     name4: <string:fourth product name> [TabKmenZbozi.Nazev4],
     skp: <string:skp> [TabKmenZbozi.SKP],
     range: <integer:range of goods> [TabKmenZbozi.IdSortiment],
-    vintage: <string:vintage> [],
     notice: <string:notice> [TabKmenZbozi.Upozorneni],
     note: <string:note> [TabKmenZbozi.Poznamka],
     muevidence: <string:measurement unit of evidence> [TabKmenZbozi.MJEvidence],
@@ -404,7 +405,8 @@ Output JSON object:
     edoutput: <flost:excise duty output> [TabKmenZbozi.SazbaSDVystup],
     mued: <string:measurement unit of excise duty> [TabKmenZbozi.MJSD],
     edcode: <string:excise duty code> [TabKmenZbozi.KodSD],
-    edcalc: <float:excise duty calculation> [TabKmenZbozi.PrepocetMJSD]
+    edcalc: <float:excise duty calculation> [TabKmenZbozi.PrepocetMJSD],
+    blocked: <integer:product is active or archived 0 = active, 1 = archived> [TabKmenZbozi.Blokovano]
 }
 ```
 
@@ -413,4 +415,176 @@ Possible HTTP result codes:
 200 - OK - successfull
 400 - Bad Request - when <client id> is not a number
 404 - Not Found - when client with <client id> does not exists
+```
+
+### Create product
+Create a new product.
+
+#### Request
+Url:`<server>/heliosapi/products`
+
+Method: POST
+
+Headers:
+```
+Accept: application/json
+Authorization: Bearer <JWT token>
+```
+
+POST JSON object:
+```
+{
+    group: <string length 1-3:group id> [TabKmenZbozi.SkupZbo => TabSkupinyZbozi.SkupZbo],
+    regnum: <string length 1-30:registration number> [TabKmenZbozi.RegCis],
+    storagetype: {optional} <integer:type of storage 0 = service, 1 = global configuration, 2 = FIFO, 3 = averages, 4 = customs warehouse - default 1> [TabKmenZbozi.DruhSkladu],
+    name: <string length 1-100:first product name> [TabKmenZbozi.Nazev1],
+    name2: {optional} <string length 1-100:second product name> [TabKmenZbozi.Nazev2],
+    name3: {optional} <string length 1-100:third product name> [TabKmenZbozi.Nazev3],
+    name4: {optional} <string length 1-100:fourth product name> [TabKmenZbozi.Nazev4],
+    skp: {optional} <string length 1-50:skp> [TabKmenZbozi.SKP],
+    range: {optional} <integer:range of goods> [TabKmenZbozi.IdSortiment => TabSortiment.ID],
+    notice: {optional} <string length 1-255:notice> [TabKmenZbozi.Upozorneni],
+    note: {optional} <string length 1-1073741823:note> [TabKmenZbozi.Poznamka],
+    muevidence: {optional} <string length 1-10:measurement unit of evidence> [TabKmenZbozi.MJEvidence],
+    mustocktaking: {optional} <string length 1-10:measurement unit of stock-taking> [TabKmenZbozi.MJInventura],
+    muinput: {optional} <string length 1-10:measurement unit of input> [TabKmenZbozi.MJVstup],
+    muoutput: {optional} <string length 1-10:measurement unit of output> [TabKmenZbozi.MJVystup],
+    vatinput: {optional} <float:vat input> [TabKmenZbozi.SazbaDPHVstup],
+    vatoutput: {optional} <float:vat output> [TabKmenZbozi.SazbaDPHVystup],
+    pdpcode: {optional} <integer:PDP code> [TabKmenZbozi.IDKodPDP],
+    edinput: {optional} <float:excise duty input> [TabKmenZbozi.SazbaSDVstup],
+    edoutput: {optional} <flost:excise duty output> [TabKmenZbozi.SazbaSDVystup],
+    mued: {optional} <string length 1-10:measurement unit of excise duty> [TabKmenZbozi.MJSD],
+    edcode: {optional} <string length 1-10:excise duty code> [TabKmenZbozi.KodSD],
+    edcalc: {optional} <float:excise duty calculation> [TabKmenZbozi.PrepocetMJSD],
+    blocked: {optional} <integer:product is active or archived 0 = active, 1 = archived - default 0> [TabKmenZbozi.Blokovano]
+}
+```
+
+#### Response
+HTTP Response Code: 201
+
+Headers:
+```
+Content-Type: application/json
+Header Location: products/<string:product id>
+```
+
+Output JSON object:
+````
+{
+    id: <integer:product id of created product> [TabKmenZbozi.ID]
+}
+````
+
+Possible HTTP result codes:
+```
+201 - Created - successfull
+400 - Bad Request - when input parameters are not correct
+409 - Conflict - when product with regnum already exists
+```
+
+### Update product
+Update detail data of specific product.
+
+#### Request
+Url:`<server>/heliosapi/products/<string:product id>`
+
+Method: PUT
+
+Headers:
+```
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer <JWT token>
+```
+
+PUT JSON object:
+```
+{
+    group: {optional} <string length 1-3:group id> [TabKmenZbozi.SkupZbo => TabSkupinyZbozi.SkupZbo],
+    regnum: {optional} <string length 1-30:registration number> [TabKmenZbozi.RegCis],
+    storagetype: {optional} <integer:type of storage 0 = service, 1 = global configuration, 2 = FIFO, 3 = 
+    name: {optional} <string length 1-100:first product name> [TabKmenZbozi.Nazev1],
+    name2: {optional} <string length 1-100:second product name> [TabKmenZbozi.Nazev2],
+    name3: {optional} <string length 1-100:third product name> [TabKmenZbozi.Nazev3],
+    name4: {optional} <string length 1-100:fourth product name> [TabKmenZbozi.Nazev4],
+    skp: {optional} <string length 1-50:skp> [TabKmenZbozi.SKP],
+    range: {optional} <integer:range of goods> [TabKmenZbozi.IdSortiment => TabSortiment.ID],
+    notice: {optional} <string length 1-255:notice> [TabKmenZbozi.Upozorneni],
+    note: {optional} <string length 1-1073741823:note> [TabKmenZbozi.Poznamka],
+    muevidence: {optional} <string length 1-10:measurement unit of evidence> [TabKmenZbozi.MJEvidence],
+    mustocktaking: {optional} <string length 1-10:measurement unit of stock-taking> [TabKmenZbozi.MJInventura],
+    muinput: {optional} <string length 1-10:measurement unit of input> [TabKmenZbozi.MJVstup],
+    muoutput: {optional} <string length 1-10:measurement unit of output> [TabKmenZbozi.MJVystup],
+    vatinput: {optional} <float:vat input> [TabKmenZbozi.SazbaDPHVstup],
+    vatoutput: {optional} <float:vat output> [TabKmenZbozi.SazbaDPHVystup],
+    pdpcode: {optional} <integer:PDP code> [TabKmenZbozi.IDKodPDP],
+    edinput: {optional} <float:excise duty input> [TabKmenZbozi.SazbaSDVstup],
+    edoutput: {optional} <flost:excise duty output> [TabKmenZbozi.SazbaSDVystup],
+    mued: {optional} <string length 1-10:measurement unit of excise duty> [TabKmenZbozi.MJSD],
+    edcode: {optional} <string length 1-10:excise duty code> [TabKmenZbozi.KodSD],
+    edcalc: {optional} <float:excise duty calculation> [TabKmenZbozi.PrepocetMJSD],
+    blocked: {optional} <integer:product is active or archived 0 = active, 1 = archived> [TabKmenZbozi.Blokovano]
+}
+```
+
+#### Response
+HTTP Response Code: 200
+
+Headers:
+```
+Content-Type: application/json
+```
+
+Output JSON object:
+
+Empty
+
+Possible HTTP result codes:
+```
+200 - OK - update successfull
+204 - No Content - missing all input parameters
+400 - Bad Request - input data not valid
+404 - Not Found - <product id> not found
+405 - Method Not Allowed - when <product id> is missing
+500 - Internal Server Error - when update affected != 1 rows, calls also rollback
+```
+
+### Delete product
+Delete specific product.
+
+#### Request
+Url:`<server>/heliosapi/products/<string:product id>`
+
+Method: DELETE
+
+Headers:
+```
+Accept: application/json
+Authorization: Bearer <JWT token>
+```
+
+DELETE parameters:
+
+Empty
+
+#### Response
+HTTP Response Code: 200
+
+Headers:
+```
+Content-Type: application/json
+```
+
+Output JSON object:
+
+Empty
+
+Possible HTTP result codes:
+```
+200 - OK - delete successfull
+404 - Not Found - <product id> not found
+405 - Method Not Allowed - when <product id> is missing
+500 - Internal Server Error - when delete affected != 1 rows, calls also rollback
 ```

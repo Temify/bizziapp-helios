@@ -1,7 +1,7 @@
 {
 	"_type": "export",
 	"__export_format": 3,
-	"__export_date": "2017-07-20T11:21:21.613Z",
+	"__export_date": "2017-07-20T16:45:05.602Z",
 	"__export_source": "insomnia.desktop.app:v5.6.3",
 	"resources": [
 		{
@@ -760,6 +760,45 @@
 			],
 			"authentication": {},
 			"metaSortKey": -1500375984927,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_953f876d0bae4f3c9e8494d3e87ba9e7",
+			"parentId": "fld_6e277f6590a64187be58092dad39c32f",
+			"modified": 1500569091497,
+			"created": 1500567020614,
+			"url": "http://localhost:8080/heliosapi/products",
+			"name": "POST:products - HTTP 201",
+			"description": "",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n\t\t\"group\": \"345\",\n    \"regnum\": \"TEST3\",\n    \"name\": \"TestName\"\n}"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Accept",
+					"value": "application/json",
+					"id": "pair_4e253b625d554fa4a8c67ba453824477"
+				},
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_7f66a1847abe44148c09edbf3df204e0"
+				},
+				{
+					"name": "Authorization",
+					"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImp0aSI6IjU5NjM1MmM0ZWQ1YjgifQ.eyJpc3MiOiJpc3N1ZXIiLCJhdWQiOiJhdWRpZW5jZSIsImp0aSI6IjU5NjM1MmM0ZWQ1YjgiLCJpYXQiOjE0OTk2ODE0NzYsIm5iZiI6MTQ5OTY4MTQ3NiwiZXhwIjoxNDk5Njg1MDc2LCJkYXRhIjp7fX0.qTn-HNcPueW-_raGBSivgLf6y5cVHrpl8wjL996eqcA",
+					"id": "pair_dfc1675cfca24cbd82e84d4c857430ab"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1500375984877,
 			"settingStoreCookies": true,
 			"settingSendCookies": true,
 			"settingDisableRenderRequestBody": false,

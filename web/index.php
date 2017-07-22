@@ -1,6 +1,9 @@
 <?php
 namespace HeliosAPI;
 
+// Disable NOTICE from reporting
+error_reporting( error_reporting() & ~E_NOTICE );
+
 /*Helios API v0.0.1*/
 require_once __DIR__.'/../vendor/autoload.php';
 
