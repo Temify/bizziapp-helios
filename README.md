@@ -30,7 +30,8 @@ DB_PASSWORD: <string:db password>
 
 ## API methods
 
-### List of clients
+### List of clients - version 1
+
 Get list of clients.
 
 #### Request
@@ -46,12 +47,12 @@ Authorization: Bearer <JWT token>
 
 GET parameters:
 ```
-name: {optional} <string length 1-100:search string> [TabCisOrg.Nazev OR TabCisOrg.DruhyNazev],
+name: {optional} <string length 1-100:name - search string> [TabCisOrg.Nazev OR TabCisOrg.DruhyNazev],
 nameisnotnull: {optional} <string:'true' = name is not null, 'false' = name is null, null = name can be null > [TabCisOrg.Nazev OR TabCisOrg.DruhyNazev],
 status: {optional} <string:status> ('0' = active, '1' = blocked, '2' = disabled, '3' = potential) [TabCisOrg.Stav],
 listfrom: {optional} <string:number of position from complete list where result begins>,
 listto: {optional} <string:number of position from complete list where result ends>,
-sort: {optional} <string:by which should be ordered> ('nameasc', 'namedesc', 'ideasc', 'iddesc') [TabCisOrg.Nazev]
+sort: {optional} <string:by which should be ordered> ('nameasc', 'namedesc', 'ideasc', 'iddesc') [TabCisOrg.Nazev, TabCisOrg.ID]
 ```
 
 #### Response
@@ -89,7 +90,7 @@ Possible HTTP result codes:
 400 - Bad Request - when GET parameters have no correct format
 ```
 
-### Detail of client
+### Detail of client - version 1
 Get detail of specific client.
 
 #### Request
@@ -136,7 +137,7 @@ Output JSON object:
     ic: <string:ic number> [TabCisOrg.ICO],
     dic: <string:dic number> [TabCisOrg.DIC],
     website: <string:web URL> [],
-    status: <integer:status 0 = active, 1 = blocked, 2 = disabled, 3 = potential> [TabCisOrg.Stav]
+    status: <integer:status> (0 = active, 1 = blocked, 2 = disabled, 3 = potential) [TabCisOrg.Stav]
 }
 ```
 
@@ -147,7 +148,7 @@ Possible HTTP result codes:
 404 - Not Found - when client with <client id> does not exists
 ```
 
-### Create new client
+### Create new client - version 1
 Create a new client.
 
 #### Request
@@ -177,7 +178,7 @@ POST JSON object:
     contact: {optional} <string:contact>  [TabCisOrg.Kontakt],
     ic: {optional} <string length 1-20:ic number> [TabCisOrg.ICO],
     dic: {optional} <string length 1-15:dic number> [TabCisOrg.DIC],
-    status: {optional} <string:status '0' = active, '1' = blocked, '2' = disabled, '3' = potential - default '0'> [TabCisOrg.Stav]
+    status: {optional} <string:status> ('0' = active, '1' = blocked, '2' = disabled, '3' = potential - default '0') [TabCisOrg.Stav]
 }
 ```
 
@@ -204,7 +205,7 @@ Possible HTTP result codes:
 409 - Conflict - when client with orgnum already exists
 ```
 
-### Update client
+### Update client - version 1
 Update detail data of specific client.
 
 #### Request
@@ -234,7 +235,7 @@ PUT JSON object:
     contact: {optional} <string length 1-40:contact>  [TabCisOrg.Kontakt],
     ic: {optional} <string length 1-20:ic number> [TabCisOrg.ICO],
     dic: {optional} <string length 1-15:dic number> [TabCisOrg.DIC],
-    status: {optional} <integer:status 0 = active, 1 = blocked, 2 = disabled, 3 = potential> [TabCisOrg.Stav]
+    status: {optional} <integer:status> (0 = active, 1 = blocked, 2 = disabled, 3 = potential) [TabCisOrg.Stav]
 }
 ```
 
@@ -260,7 +261,7 @@ Possible HTTP result codes:
 500 - Internal Server Error - when update affected != 1 rows, calls also rollback
 ```
 
-### Delete client
+### Delete client - version 1
 Delete specific client.
 
 #### Request
@@ -298,7 +299,7 @@ Possible HTTP result codes:
 500 - Internal Server Error - when delete affected != 1 rows, calls also rollback
 ```
 
-### List of products
+### List of products - version 1
 Get list of products.
 
 #### Request
@@ -341,7 +342,7 @@ Output JSON object:
             name3: <string:third product name> [TabKmenZbozi.Nazev3],
             name4: <string:fourth product name> [TabKmenZbozi.Nazev4],
             skp: <string:skp> [TabKmenZbozi.SKP],
-            blocked: <integer:product is active or archived 0 = active, 1 = archived> [TabKmenZbozi.Blokovano]
+            blocked: <integer:product is active or archived> (0 = active, 1 = archived) [TabKmenZbozi.Blokovano]
         }
     },
     totalrows: <integer:total count of rows of whole list from which is listfrom and listto returned>
@@ -354,7 +355,7 @@ Possible HTTP result codes:
 400 - Bad Request - when GET parameters have no correct format
 ```
 
-### Detail of product
+### Detail of product - version 1
 Get detail of specific product.
 
 #### Request
@@ -385,7 +386,7 @@ Output JSON object:
     id: <integer:product id> [TabKmenZbozi.ID],
     group: <string:group id> [TabKmenZbozi.SkupZbo],
     regnum: <string:registration number> [TabKmenZbozi.RegCis],
-    storagetype: {optional} <integer:type of storage 0 = service, 1 = global configuration, 2 = FIFO, 3 = averages, 4 = customs warehouse> [TabKmenZbozi.DruhSkladu],
+    storagetype: {optional} <integer:type of storage> (0 = service, 1 = global configuration, 2 = FIFO, 3 = averages, 4 = customs warehouse) [TabKmenZbozi.DruhSkladu],
     name: <string:first product name> [TabKmenZbozi.Nazev1],
     name2: <string:second product name> [TabKmenZbozi.Nazev2],
     name3: <string:third product name> [TabKmenZbozi.Nazev3],
@@ -406,7 +407,7 @@ Output JSON object:
     mued: <string:measurement unit of excise duty> [TabKmenZbozi.MJSD],
     edcode: <string:excise duty code> [TabKmenZbozi.KodSD],
     edcalc: <float:excise duty calculation> [TabKmenZbozi.PrepocetMJSD],
-    blocked: <integer:product is active or archived 0 = active, 1 = archived> [TabKmenZbozi.Blokovano]
+    blocked: <integer:product is active or archived> (0 = active, 1 = archived) [TabKmenZbozi.Blokovano]
 }
 ```
 
@@ -417,7 +418,7 @@ Possible HTTP result codes:
 404 - Not Found - when client with <client id> does not exists
 ```
 
-### Create product
+### Create product - version 1
 Create a new product.
 
 #### Request
@@ -457,7 +458,7 @@ POST JSON object:
     mued: {optional} <string length 1-10:measurement unit of excise duty> [TabKmenZbozi.MJSD],
     edcode: {optional} <string length 1-10:excise duty code> [TabKmenZbozi.KodSD],
     edcalc: {optional} <float:excise duty calculation> [TabKmenZbozi.PrepocetMJSD],
-    blocked: {optional} <integer:product is active or archived 0 = active, 1 = archived - default 0> [TabKmenZbozi.Blokovano]
+    blocked: {optional} <integer:product is active or archived> (0 = active, 1 = archived - default 0) [TabKmenZbozi.Blokovano]
 }
 ```
 
@@ -484,7 +485,7 @@ Possible HTTP result codes:
 409 - Conflict - when product with regnum already exists
 ```
 
-### Update product
+### Update product - version 1
 Update detail data of specific product.
 
 #### Request
@@ -504,7 +505,7 @@ PUT JSON object:
 {
     group: {optional} <string length 1-3:group id> [TabKmenZbozi.SkupZbo => TabSkupinyZbozi.SkupZbo],
     regnum: {optional} <string length 1-30:registration number> [TabKmenZbozi.RegCis],
-    storagetype: {optional} <integer:type of storage 0 = service, 1 = global configuration, 2 = FIFO, 3 = 
+    storagetype: {optional} <integer:type of storage 0 = service, 1 = global configuration, 2 = FIFO, 3 = averages, 4 = customs warehouse) [TabKmenZbozi.DruhSkladu],
     name: {optional} <string length 1-100:first product name> [TabKmenZbozi.Nazev1],
     name2: {optional} <string length 1-100:second product name> [TabKmenZbozi.Nazev2],
     name3: {optional} <string length 1-100:third product name> [TabKmenZbozi.Nazev3],
@@ -525,7 +526,7 @@ PUT JSON object:
     mued: {optional} <string length 1-10:measurement unit of excise duty> [TabKmenZbozi.MJSD],
     edcode: {optional} <string length 1-10:excise duty code> [TabKmenZbozi.KodSD],
     edcalc: {optional} <float:excise duty calculation> [TabKmenZbozi.PrepocetMJSD],
-    blocked: {optional} <integer:product is active or archived 0 = active, 1 = archived> [TabKmenZbozi.Blokovano]
+    blocked: {optional} <integer:product is active or archived> (0 = active, 1 = archived) [TabKmenZbozi.Blokovano]
 }
 ```
 
@@ -551,7 +552,7 @@ Possible HTTP result codes:
 500 - Internal Server Error - when update affected != 1 rows, calls also rollback
 ```
 
-### Delete product
+### Delete product - version 1
 Delete specific product.
 
 #### Request
@@ -587,4 +588,241 @@ Possible HTTP result codes:
 404 - Not Found - <product id> not found
 405 - Method Not Allowed - when <product id> is missing
 500 - Internal Server Error - when delete affected != 1 rows, calls also rollback
+```
+
+### List of contacts - version 1
+Get list of contacts.
+
+#### Request
+Url:`<server>/heliosapi/contacts`
+
+Method: GET
+
+Headers:
+```
+Accept: application/json
+Authorization: Bearer <JWT token>
+```
+
+GET parameters:
+```
+type: {optional} <string length 1-5:contact type> ('1' = phone-hard line, '2' = phone-mobile, '3' = fax, '4' = telex, '5' = operator, '6' = email, '7' = website, '8' = ico, '9' = ip address, '10' = bulk for email, '11' = skype, '12' = windows live messenger, '13' = login id, '14' = sms, '15' = data box) [TabKontakty.Druh],
+orgid: {optional} <string length 1-10:organisation id> [TabKontakty.IDOrg],
+primary: {optional} <string length 1:primary contact of specific type for orgid> ('0' = not primary, '1' = primary) [TabKontakty.Prednastaveno],
+description: {optional} <string length 1-255:contact description - search string> [TabKontakty.Popis],
+connection: {optional} <string length 1-255:contact connection by type - search string> [TabKontakty.Spojeni],
+connection2: {optional} <string length 1-255:contact second connection by type - search string> [TabKontakty.Spojeni2],
+listfrom: {optional} <string:number of position from complete list where result begins>,
+listto: {optional} <string:number of position from complete list where result ends>,
+sort: {optional} <string:by which should be ordered> ('typeasc', 'typedesc', 'connectionasc', 'connectiondesc') [TabKontakty.Druh, TabKontakty.Spojeni]
+```
+
+#### Response
+Headers:
+```
+Content-Type: application/json
+```
+
+Output JSON object:
+```
+{ 
+    rows: {
+        Array {
+            id: <integer:product id> [TabKontakty.ID],
+            orgid: <integer:organisation id> [TabKontakty.IDOrg],
+            type: <integer:contact type> (1 = phone-hard line, 2 = phone-mobile, 3 = fax, 4 = telex, 5 = operator, 6 = email, 7 = website, 8 = ico, 9 = ip address, 10 = bulk for email, 11 = skype, 12 = windows live messenger, 13 = login id, 14 = sms, 15 = data box) [TabKontakty.Druh],
+            primary: <integer length 1:primary contact of specific type for orgid> (0 = not primary, 1 = primary) [TabKontakty.Prednastaveno],
+            description: <string length 1-255:contact description> [TabKontakty.Popis],
+            connection: <string length 1-255:contact connection by type> [TabKontakty.Spojeni],
+            connection2: <string length 1-255:contact second connection by type> [TabKontakty.Spojeni2]
+        }
+    },
+    totalrows: <integer:total count of rows of whole list from which is listfrom and listto returned>
+}
+```
+
+Possible HTTP result codes:
+```
+200 - OK - successfull
+400 - Bad Request - when GET parameters have no correct format
+```
+
+### Detail of contact - version 1
+Get detail of specific contact.
+
+#### Request
+Url:`<server>/heliosapi/contacts/<string:contact id>`
+
+Method: GET
+
+Headers:
+```
+Accept: application/json
+Authorization: Bearer <JWT token>
+```
+
+GET parameters:
+```
+id: <string:contact id> [TabKontakty.ID]
+```
+
+#### Response
+Headers:
+```
+Content-Type: application/json
+```
+
+Output JSON object:
+```
+{
+    id: <integer:product id> [TabKontakty.ID],
+    orgid: <integer:organisation id> [TabKontakty.IDOrg],
+    type: <integer:contact type> (1 = phone-hard line, 2 = phone-mobile, 3 = fax, 4 = telex, 5 = operator, 6 = email, 7 = website, 8 = ico, 9 = ip address, 10 = bulk for email, 11 = skype, 12 = windows live messenger, 13 = login id, 14 = sms, 15 = data box) [TabKontakty.Druh],
+    primary: <integer length 1:primary contact of specific type for orgid> (0 = not primary, 1 = primary) [TabKontakty.Prednastaveno],
+    description: <string length 1-255:contact description> [TabKontakty.Popis],
+    connection: <string length 1-255:contact connection by type> [TabKontakty.Spojeni],
+    connection2: <string length 1-255:contact second connection by type> [TabKontakty.Spojeni2]
+}
+```
+
+Possible HTTP result codes:
+```
+200 - OK - successfull
+400 - Bad Request - when <contact id> is not a number
+404 - Not Found - when contact with <contact id> does not exists
+```
+
+### Create contact - version 1
+Create a new contact.
+
+#### Request
+Url:`<server>/heliosapi/contacts`
+
+Method: POST
+
+Headers:
+```
+Accept: application/json
+Authorization: Bearer <JWT token>
+```
+
+POST JSON object:
+```
+{
+    orgid: <integer:organisation id> [TabKontakty.IDOrg],
+    type: <integer:contact type> (1 = phone-hard line, 2 = phone-mobile, 3 = fax, 4 = telex, 5 = operator, 6 = email, 7 = website, 8 = ico, 9 = ip address, 10 = bulk for email, 11 = skype, 12 = windows live messenger, 13 = login id, 14 = sms, 15 = data box) [TabKontakty.Druh],
+    primary: {optional} <integer length 1:primary contact of specific type for orgid> (0 = not primary, 1 = primary - default = 0) [TabKontakty.Prednastaveno],
+    description: {optional} <string length 1-255:contact description> [TabKontakty.Popis],
+    connection: {optional} <string length 1-255:contact connection by type> [TabKontakty.Spojeni],
+    connection2: {optional} <string length 1-255:contact second connection by type> [TabKontakty.Spojeni2]
+}
+```
+
+#### Response
+HTTP Response Code: 201
+
+Headers:
+```
+Content-Type: application/json
+Header Location: products/<string:product id>
+```
+
+Output JSON object:
+````
+{
+    id: <integer:contact id of created contact> [TabKontakty.ID]
+}
+````
+
+Possible HTTP result codes:
+```
+201 - Created - successfull
+400 - Bad Request - when input parameters are not correct
+```
+
+### Update contact - version 1
+Update detail data of specific contact.
+
+#### Request
+Url:`<server>/heliosapi/contacts/<string:contact id>`
+
+Method: PUT
+
+Headers:
+```
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer <JWT token>
+```
+
+PUT JSON object:
+```
+{
+    orgid: {optional} <integer:organisation id> [TabKontakty.IDOrg],
+    type: {optional} <integer:contact type> (1 = phone-hard line, 2 = phone-mobile, 3 = fax, 4 = telex, 5 = operator, 6 = email, 7 = website, 8 = ico, 9 = ip address, 10 = bulk for email, 11 = skype, 12 = windows live messenger, 13 = login id, 14 = sms, 15 = data box) [TabKontakty.Druh],
+    primary: {optional} <integer length 1:primary contact of specific type for orgid> (0 = not primary, 1 = primary - default = 0) [TabKontakty.Prednastaveno],
+    description: {optional} <string length 1-255:contact description> [TabKontakty.Popis],
+    connection: {optional} <string length 1-255:contact connection by type> [TabKontakty.Spojeni],
+    connection2: {optional} <string length 1-255:contact second connection by type> [TabKontakty.Spojeni2]
+}
+```
+
+#### Response
+HTTP Response Code: 200
+
+Headers:
+```
+Content-Type: application/json
+```
+
+Output JSON object:
+
+Empty
+
+Possible HTTP result codes:
+```
+200 - OK - update successfull
+204 - No Content - missing all input parameters
+400 - Bad Request - input data not valid
+404 - Not Found - <contact id> not found
+405 - Method Not Allowed - when <contact id> is missing
+500 - Internal Server Error - when update affected != 1 rows, calls also rollback
+```
+
+### Delete contact - version 1
+Delete specific contact.
+
+#### Request
+Url:`<server>/heliosapi/contacts/<string:contact id>`
+
+Method: DELETE
+
+Headers:
+```
+Accept: application/json
+Authorization: Bearer <JWT token>
+```
+
+DELETE parameters:
+
+Empty
+
+#### Response
+HTTP Response Code: 200
+
+Headers:
+```
+Content-Type: application/json
+```
+
+Output JSON object:
+
+Empty
+
+Possible HTTP result codes:
+```
+200 - OK - delete successfull
+404 - Not Found - <contact id> not found
+405 - Method Not Allowed - when <contact id> is missing
+500 - Internal Server Error - when delete affected != 1 rows, calls also rollback (reference to contact is probably used in another table and contact cant't be deleted)
 ```

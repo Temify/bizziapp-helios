@@ -189,7 +189,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
 
             $qb->from('TabCisOrg');
             
-            // Name
+            // Id
             $qb->andWhere('TabCisOrg.ID = ?');
             $sqlParams[] = $id;
 
@@ -529,6 +529,450 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             return $response;
         });
 
+        // Get list of contacts
+        $controllers->get('/contacts', function (Application $app) 
+        {
+            $paramsOk = true;
+            $result = new \stdClass();
+            $request = $app['request_stack']->getCurrentRequest();
+            $inputParams = $request->query->all();
+
+            $qb = $app['db']->createQueryBuilder();
+            $sqlParams = Array();
+
+            $qb->from('TabKontakty');
+
+            // Type
+            if(!empty($inputParams['type']))
+            {
+                if(strlen($inputParams['type']) <= 5 && is_numeric($inputParams['type']))
+                {
+                    $qb->andWhere('TabKontakty.Druh = ?');
+                    $sqlParams[] = $inputParams['type'];
+                }
+                else
+                    $paramsOk = false;
+            }
+
+            // Organisation id
+            if(!empty($inputParams['orgid']))
+            {
+                if(strlen($inputParams['orgid']) <= 10 && is_numeric($inputParams['orgid']))
+                {
+                    $qb->andWhere('TabKontakty.IDOrg = ?');
+                    $sqlParams[] = $inputParams['orgid'];
+                }
+                else
+                    $paramsOk = false;
+            }
+
+            // Primary
+            if(!empty($inputParams['primary']) || $inputParams['primary'] == 0)
+            {
+                if(strlen($inputParams['primary']) <= 1 && is_numeric($inputParams['primary']))
+                {
+                    $qb->andWhere('TabKontakty.Prednastaveno = ?');
+                    $sqlParams[] = $inputParams['primary'];
+                }
+                else
+                    $paramsOk = false;
+            }
+
+            // Description
+            if(!empty($inputParams['description']))
+            {
+                if(strlen($inputParams['description']) <= 255)
+                {
+                    $qb->andWhere('TabKontakty.Popis LIKE ?');
+                    $sqlParams[] = '%'.$inputParams['description'].'%';
+                }
+                else
+                    $paramsOk = false;
+            }
+
+           // Connection
+            if(!empty($inputParams['connection']))
+            {
+                if(strlen($inputParams['connection']) <= 255)
+                {
+                    $qb->andWhere('TabKontakty.Spojeni LIKE ?');
+                    $sqlParams[] = '%'.$inputParams['connection'].'%';
+                }
+                else
+                    $paramsOk = false;
+            }
+
+           // Connection 2
+            if(!empty($inputParams['connection2']))
+            {
+                if(strlen($inputParams['connection2']) <= 255)
+                {
+                    $qb->andWhere('TabKontakty.Spojeni2 LIKE ?');
+                    $sqlParams[] = '%'.$inputParams['connection2'].'%';
+                }
+                else
+                    $paramsOk = false;
+            }
+
+            if($paramsOk === false)
+                $app->abort(400, "Bad Request.");
+
+            // Get total rows count
+            $qb->select('COUNT(TabKontakty.ID) AS totalcount');
+            $app['db']->prepare($qb->getSql());
+            if($app['debug']) $app['monolog']->info('DB Select contact whole list rows - TOTAL COUNT:'.$qb->getSql());
+
+            $totalRows = $app['db']->fetchAll($qb->getSql(), $sqlParams);
+            $result->totalrows = (int)$totalRows[0]['totalcount'];
+
+            $result->totalrows = $totalRows[0]['totalcount'];
+            // Get part of lits
+            $qb->select(
+                        'TabKontakty.ID', 
+                        'TabKontakty.IDOrg',
+                        'TabKontakty.Druh',
+                        'TabKontakty.Prednastaveno',
+                        'TabKontakty.Popis',
+                        'TabKontakty.Spojeni',
+                        'TabKontakty.Spojeni2'
+                        );
+
+            // Limit from
+            if(!empty($inputParams['listfrom']))
+                if(is_numeric($inputParams['listfrom']))
+                    $qb->setFirstResult($inputParams['listfrom']);
+                else
+                    $paramsOk = false;
+            
+            // Limit to
+            if(!empty($inputParams['listto']))
+                if(is_numeric($inputParams['listto']))
+                    $qb->setMaxResults($inputParams['listto']);
+                else
+                    $paramsOk = false;
+
+			// Sort
+			if(!empty($inputParams['sort']))
+			{
+				switch($inputParams['sort'])
+				{
+					case 'typeasc':
+					{
+						$qb->orderBy('TabKontakty.Druh', 'ASC');
+						break;
+					}
+
+					case 'typedesc':
+					{
+						$qb->orderBy('TabKontakty.Druh', 'DESC');
+						break;
+					}
+
+					case 'connectionasc':
+					{
+						$qb->orderBy('TabKontakty.Spojeni', 'ASC');
+						break;
+					}
+
+					case 'connectiondesc':
+					{
+						$qb->orderBy('TabKontakty.Spojeni', 'DESC');
+						break;
+					}
+
+                    default:
+                    {
+                        $paramsOk = false;
+                        break;
+                    }
+				}
+			}
+
+            if($paramsOk === false)
+                $app->abort(400, "Bad Request.");
+
+            $app['db']->prepare($qb->getSql());
+            if($app['debug']) $app['monolog']->info('DB Select contact list :'.$qb->getSql());
+            $listData = $app['db']->fetchAll($qb->getSql(), $sqlParams);
+
+            foreach($listData as $row)
+            {
+                $newRow = new \stdClass();
+                $newRow->id = (int)$row['ID'];
+                $newRow->orgid = (int)$row['IDOrg'];
+                $newRow->type = (int)$row['Druh'];
+                $newRow->primary = (int)$row['Prednastaveno'];
+                $newRow->description = $row['Popis'];
+                $newRow->connection = $row['Spojeni'];
+                $newRow->connection2 = $row['Spojeni2'];
+                $result->rows[] = $newRow;
+            }
+
+            //Construct response
+            if($app['debug']) $app['monolog']->info('Response: data:'.json_encode($result));
+            return $app->json($result);
+        });
+        
+        // Get detail of contact
+        $controllers->get('/contacts/{id}', function (Application $app, $id) 
+        {
+            if(empty($id) || !is_numeric($id))
+                $app->abort(400, "Bad Request.");
+
+            $result = new \stdClass();
+
+            $qb = $app['db']->createQueryBuilder();
+            $sqlParams = Array();
+
+            $qb->from('TabKontakty');
+            
+            // Id
+            $qb->andWhere('TabKontakty.ID = ?');
+            $sqlParams[] = $id;
+
+            // Get data
+            $qb->select(
+                        'TabKontakty.ID', 
+                        'TabKontakty.IDOrg',
+                        'TabKontakty.Druh',
+                        'TabKontakty.Prednastaveno',
+                        'TabKontakty.Popis',
+                        'TabKontakty.Spojeni',
+                        'TabKontakty.Spojeni2'
+                        );
+
+            $app['db']->prepare($qb->getSql());
+            if($app['debug']) $app['monolog']->info('DB Select contact detail :'.$qb->getSql());
+            $listData = $app['db']->fetchAll($qb->getSql(), $sqlParams);
+
+            if(count($listData) < 1)
+                $app->abort(404, "Not Found.");
+
+            foreach($listData as $row)
+            {
+                $newRow = new \stdClass();
+                $newRow->id = (int)$row['ID'];
+                $newRow->orgid = (int)$row['IDOrg'];
+                $newRow->type = (int)$row['Druh'];
+                $newRow->primary = (int)$row['Prednastaveno'];
+                $newRow->description = $row['Popis'];
+                $newRow->connection = $row['Spojeni'];
+                $newRow->connection2 = $row['Spojeni2'];
+                $result = $newRow;
+            }
+
+            //Construct response
+	        if($app['debug']) $app['monolog']->info('Response: data:'.json_encode($result));
+            return $app->json($result);
+        });
+
+        // Create new contact
+        $controllers->post('/contacts', function (Application $app) 
+        {
+            $paramsOk = true;
+            $newClientId = null;
+            $request = $app['request_stack']->getCurrentRequest();
+            $inputParams = json_decode($request->getContent(), true);
+            $qb = $app['db']->createQueryBuilder();
+
+            // Check data
+            $sqlParams = Array();
+
+            // Default value: primary
+            if(empty($inputParams['primary']))
+                $inputParams['primary'] = 0;
+
+            // Required fields
+            if(
+                $inputParams['orgid'] != null && is_numeric($inputParams['orgid']) &&
+                $inputParams['type'] != null && is_numeric($inputParams['type']) &&
+                ($inputParams['primary'] != null || $inputParams['primary'] == 0) && is_numeric($inputParams['primary'])
+                )
+            {
+                $sqlParams['IDOrg'] = $inputParams['orgid'];
+                $sqlParams['Druh'] = $inputParams['type'];
+                $sqlParams['Prednastaveno'] = $inputParams['primary'];
+            }
+            else
+                $app->abort(400, "Bad Request.");
+
+            // Optional fields
+            if($inputParams['description'] != null)
+                if(strlen($inputParams['description']) <= 255)
+                    $sqlParams['Popis'] = $inputParams['description'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['connection'] != null)
+                if(strlen($inputParams['connection']) <= 255)
+                    $sqlParams['Spojeni'] = $inputParams['connection'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['connection2'] != null)
+                if(strlen($inputParams['connection2']) <= 255)
+                    $sqlParams['Spojeni2'] = $inputParams['connection2'];
+                else
+                    $paramsOk = false;
+
+            if($paramsOk === false)
+                $app->abort(400, "Bad Request.");
+
+
+            $app['db']->beginTransaction();
+            $result = $app['db']->insert('TabKontakty', $sqlParams);
+            $newContactId = $app['db']->lastInsertId();
+
+            // If exactly 1 row was affected            
+            if($result === 1)
+                $app['db']->commit();
+            else
+            {
+                $app['db']->rollBack();
+                $app->abort(500, "Internal Server Error.");
+            }
+
+            $response =  new Response(json_encode(array('id' => (int)$newContactId)), 201);
+            $response->headers->set('Location', 'contacts/'.$newContactId);
+            return $response;
+        });
+
+        // Update all contacts - method not allowed
+        $controllers->put('/contacts', function (Application $app)
+        {
+            $app->abort(405, "Method Not Allowed.");
+        });
+
+        // Update contact
+        $controllers->put('/contacts/{id}', function (Application $app, $id)
+        {
+            if(empty($id) || !is_numeric($id))
+                $app->abort(400, "Bad Request.");
+
+            $paramsOk = true;
+            $request = $app['request_stack']->getCurrentRequest();
+            $inputParams = json_decode($request->getContent(), true);
+
+            // Check if contact exists
+            $qb = $app['db']->createQueryBuilder();
+            $qb->select(
+                        'TabKontakty.ID'
+                        );
+            $qb->from('TabKontakty');            
+            $qb->andWhere('TabKontakty.ID = ?');
+            $app['db']->prepare($qb->getSql());
+            if($app['debug']) $app['monolog']->info('DB Select contact by ID :'.$qb->getSql());
+            $contactData = $app['db']->fetchAssoc($qb->getSql(), array($id));
+            if(!is_array($contactData) || count($contactData) <= 0)
+                $app->abort(404, "Not Found.");
+
+            // Check data
+            if(count($inputParams) < 1)
+                $app->abort(204, "No Content.");
+
+            // Optional fields - but must be at least one
+            $sqlParams = Array();
+            if($inputParams['orgid'] != null)
+                if(is_numeric($inputParams['orgid']))
+                    $sqlParams['IDOrg'] = $inputParams['orgid'];
+                else
+                    $paramsOk = false;
+            
+            if($inputParams['type'] != null)
+                if(is_numeric($inputParams['type']))
+                    $sqlParams['Druh'] = $inputParams['type'];
+                else
+                    $paramsOk = false;
+
+            if(($inputParams['primary'] != null || $inputParams['primary'] == '0'))
+                if(is_numeric($inputParams['primary']))
+                    $sqlParams['Prednastaveno'] = $inputParams['primary'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['description'] != null)
+                if(strlen($inputParams['description']) <= 255)
+                    $sqlParams['Popis'] = $inputParams['description'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['connection'] != null)
+                if(strlen($inputParams['connection']) <= 255)
+                    $sqlParams['Spojeni'] = $inputParams['connection'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['connection2'] != null)
+                if(strlen($inputParams['connection2']) <= 255)
+                    $sqlParams['Spojeni2'] = $inputParams['connection2'];
+                else
+                    $paramsOk = false;
+
+            // No input data received or bad format data
+            if(count($sqlParams) < 1 || $paramsOk === false)
+                $app->abort(400, "Bad Request.");
+
+            $app['db']->beginTransaction();
+            $result = $app['db']->update('TabKontakty', $sqlParams, array('ID' => $id));
+
+            // If exactly 1 row was affected            
+            if($result === 1)
+                $app['db']->commit();
+            else
+            {
+                $app['db']->rollBack();
+                $app->abort(500, "Internal Server Error.");
+            }
+
+            $response =  new Response(null, 200);
+            return $response;
+        });
+
+        // Delete all contacts - method not allowed
+        $controllers->delete('/contacts', function (Application $app)
+        {
+            $app->abort(405, "Method Not Allowed.");
+        });
+
+        // Delete contact
+        $controllers->delete('/contacts/{id}', function (Application $app, $id)
+        {
+            if(empty($id) || !is_numeric($id))
+                $app->abort(400, "Bad Request.");
+
+            $paramsOk = true;
+            $request = $app['request_stack']->getCurrentRequest();
+            $inputParams = json_decode($request->getContent(), true);
+
+            // Check if contact exists
+            $qb = $app['db']->createQueryBuilder();
+            $qb->select(
+                        'TabKontakty.ID'
+                        );
+            $qb->from('TabKontakty');            
+            $qb->andWhere('TabKontakty.ID = ?');
+            $app['db']->prepare($qb->getSql());
+            if($app['debug']) $app['monolog']->info('DB Select contact by ID :'.$qb->getSql());
+            $contactData = $app['db']->fetchAssoc($qb->getSql(), array($id));
+            if(!is_array($contactData) || count($contactData) <= 0)
+                $app->abort(404, "Not Found.");
+
+            $app['db']->beginTransaction();
+            $result = $app['db']->delete('TabKontakty', array('ID' => $id));
+
+            // If exactly 1 row was affected            
+            if($result === 1)
+                $app['db']->commit();
+            else
+            {
+                $app['db']->rollBack();
+                $app->abort(500, "Internal Server Error.");
+            }
+
+            $response =  new Response(null, 200);
+            return $response;
+        });
+
         // Get list of products
         $controllers->get('/products', function (Application $app) 
         {
@@ -687,7 +1131,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
 
             $qb->from('TabKmenZbozi');
             
-            // Name
+            // Id
             $qb->andWhere('TabKmenZbozi.ID = ?');
             $sqlParams[] = $id;
 
