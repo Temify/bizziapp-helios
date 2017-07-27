@@ -826,3 +826,115 @@ Possible HTTP result codes:
 405 - Method Not Allowed - when <contact id> is missing
 500 - Internal Server Error - when delete affected != 1 rows, calls also rollback (reference to contact is probably used in another table and contact cant't be deleted)
 ```
+
+### List of storages - version 1
+Get list of storages.
+
+#### Request
+Url:`<server>/heliosapi/storages`
+
+Method: GET
+
+Headers:
+```
+Accept: application/json
+Authorization: Bearer <JWT token>
+```
+
+GET parameters:
+```
+number: {optional} <string length 1-30:storage number - search string> [TabStrom.Cislo],
+name: {optional} <string length 1-40:storage name - search string> [TabStrom.Nazev],
+centernumber: {optional} <string length 1-21:storage center number - search string> [TabStrom.CisloStr],
+listfrom: {optional} <string:number of position from complete list where result begins>,
+listto: {optional} <string:number of position from complete list where result ends>,
+sort: {optional} <string:by which should be ordered> ('numberasc', 'numberdesc') [TabStrom.Cislo]
+```
+
+#### Response
+Headers:
+```
+Content-Type: application/json
+```
+
+Output JSON object:
+```
+{ 
+    rows: {
+        Array {
+            id: <integer:storage id> [TabStrom.Id],
+            number: <string length 1-30:storage number> [TabStrom.Cislo],
+            name: <string length 1-40:storage name> [TabStrom.Nazev],
+            centernumber: <string length 1-21:storage center number> [TabStrom.CisloStr]
+        }
+    },
+    totalrows: <integer:total count of rows of whole list from which is listfrom and listto returned>
+}
+```
+
+Possible HTTP result codes:
+```
+200 - OK - successfull
+400 - Bad Request - when GET parameters have no correct format
+```
+
+### Detail of storage - version 1
+Get detail of specific storage.
+
+#### Request
+Url:`<server>/heliosapi/storages/<string:storage id>`
+
+Method: GET
+
+Headers:
+```
+Accept: application/json
+Authorization: Bearer <JWT token>
+```
+
+GET parameters:
+```
+id: <string:storage id> [TabStrom.Id]
+```
+
+#### Response
+Headers:
+```
+Content-Type: application/json
+```
+
+Output JSON object:
+```
+{
+    id: <integer:storage id> [TabStrom.Id],
+    number: <string length 1-30:storage number> [TabStrom.Cislo],
+    name: <string length 1-40:storage name> [TabStrom.Nazev],
+    centernumber: <string length 1-21:storage center number> [TabStrom.CisloStr],
+    products: {
+        Array {
+                id: <integer:product id> [TabKmenZbozi.ID],
+                regnum: <string:registration number> [TabKmenZbozi.RegCis],
+                group: <string:group id> [TabKmenZbozi.SkupZbo],
+                name1: <string:first product name> [TabKmenZbozi.Nazev1],
+                name2: <string:second product name> [TabKmenZbozi.Nazev2],
+                name3: <string:third product name> [TabKmenZbozi.Nazev3],
+                name4: <string:fourth product name> [TabKmenZbozi.Nazev4],
+                skp: <string:skp> [TabKmenZbozi.SKP],
+                blocked: <integer:product is active or archived> (0 = active, 1 = archived) [TabKmenZbozi.Blokovano],
+                storage: {
+                    amount: <integer:amount of product in storage> [TabStavSkladu.Mnozstvi],
+                    availableamount: <integer:available amount of product in storage> [TabStavSkladu.MnozstviDispo],
+                    dispenseamount: <integer:amount of product to dispense in storage> [TabStavSkladu.MnozstviKVydeji]
+                }
+
+        }
+    }
+}
+```
+
+Possible HTTP result codes:
+```
+200 - OK - successfull
+400 - Bad Request - when <storage id> is not a number
+404 - Not Found - when storage with <storage id> does not exists
+```

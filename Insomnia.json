@@ -1,7 +1,7 @@
 {
 	"_type": "export",
 	"__export_format": 3,
-	"__export_date": "2017-07-26T15:16:05.672Z",
+	"__export_date": "2017-07-27T13:38:50.649Z",
 	"__export_source": "insomnia.desktop.app:v5.6.3",
 	"resources": [
 		{
@@ -642,6 +642,98 @@
 			],
 			"authentication": {},
 			"metaSortKey": -1500375984702,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_8163338faab54189bb3204d52476fce0",
+			"parentId": "fld_70356013b7e44d2fa7b54bb257d52feb",
+			"modified": 1501162718311,
+			"created": 1501162597511,
+			"url": "http://helios-app.eu-central-1.elasticbeanstalk.com/web/index.php/heliosapi/storages",
+			"name": "GET:storages - HTTP 200 (Copy)",
+			"description": "",
+			"method": "GET",
+			"body": {
+				"mimeType": "application/json",
+				"text": ""
+			},
+			"parameters": [
+				{
+					"name": "sort",
+					"value": "numberasc",
+					"id": "pair_54420de7638f4aa0acd9b810622b41cd",
+					"disabled": false
+				},
+				{
+					"name": "listfrom",
+					"value": "10",
+					"id": "pair_ea704be8b64345b1a1ce4d368b4ec244",
+					"disabled": false
+				},
+				{
+					"name": "listto",
+					"value": "10",
+					"id": "pair_95a094e94a9948eaa9b20ae891c18f2a",
+					"disabled": false
+				},
+				{
+					"name": "number",
+					"value": "001",
+					"id": "pair_4341a08b5c934c799f790273c53ef852"
+				}
+			],
+			"headers": [
+				{
+					"name": "Accept",
+					"value": "application/json",
+					"id": "pair_7f66a1847abe44148c09edbf3df204e0"
+				},
+				{
+					"name": "Authorization",
+					"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImp0aSI6IjU5NjM1MmM0ZWQ1YjgifQ.eyJpc3MiOiJpc3N1ZXIiLCJhdWQiOiJhdWRpZW5jZSIsImp0aSI6IjU5NjM1MmM0ZWQ1YjgiLCJpYXQiOjE0OTk2ODE0NzYsIm5iZiI6MTQ5OTY4MTQ3NiwiZXhwIjoxNDk5Njg1MDc2LCJkYXRhIjp7fX0.qTn-HNcPueW-_raGBSivgLf6y5cVHrpl8wjL996eqcA",
+					"id": "pair_dfc1675cfca24cbd82e84d4c857430ab"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1500727959912.5,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_fb332f8ef5cf482081fbc7b3f2aa47f4",
+			"parentId": "fld_70356013b7e44d2fa7b54bb257d52feb",
+			"modified": 1501162723051,
+			"created": 1501162602086,
+			"url": "http://helios-app.eu-central-1.elasticbeanstalk.com/web/index.php/heliosapi/storages/3",
+			"name": "GET:contacts/<id> - HTTP 200 (Copy)",
+			"description": "",
+			"method": "GET",
+			"body": {
+				"mimeType": "application/json",
+				"text": ""
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Accept",
+					"value": "application/json",
+					"id": "pair_79604af6f03b42f9af2a867e9f77eda9"
+				},
+				{
+					"name": "Authorization",
+					"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImp0aSI6IjU5NjM1MmM0ZWQ1YjgifQ.eyJpc3MiOiJpc3N1ZXIiLCJhdWQiOiJhdWRpZW5jZSIsImp0aSI6IjU5NjM1MmM0ZWQ1YjgiLCJpYXQiOjE0OTk2ODE0NzYsIm5iZiI6MTQ5OTY4MTQ3NiwiZXhwIjoxNDk5Njg1MDc2LCJkYXRhIjp7fX0.qTn-HNcPueW-_raGBSivgLf6y5cVHrpl8wjL996eqcA",
+					"id": "pair_dfc1675cfca24cbd82e84d4c857430ab"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1500727959862.5,
 			"settingStoreCookies": true,
 			"settingSendCookies": true,
 			"settingDisableRenderRequestBody": false,
@@ -1452,6 +1544,98 @@
 			],
 			"authentication": {},
 			"metaSortKey": -1500375984752,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_ffd308f8798a496993a3809f4c08719d",
+			"parentId": "fld_84d0cce5040b4c0fb3d1262914fd4331",
+			"modified": 1501158963259,
+			"created": 1501158693102,
+			"url": "http://localhost:8080/heliosapi/storages",
+			"name": "GET:storages - HTTP 200",
+			"description": "",
+			"method": "GET",
+			"body": {
+				"mimeType": "application/json",
+				"text": ""
+			},
+			"parameters": [
+				{
+					"name": "sort",
+					"value": "numberasc",
+					"id": "pair_54420de7638f4aa0acd9b810622b41cd",
+					"disabled": false
+				},
+				{
+					"name": "listfrom",
+					"value": "10",
+					"id": "pair_ea704be8b64345b1a1ce4d368b4ec244",
+					"disabled": false
+				},
+				{
+					"name": "listto",
+					"value": "10",
+					"id": "pair_95a094e94a9948eaa9b20ae891c18f2a",
+					"disabled": false
+				},
+				{
+					"name": "number",
+					"value": "001",
+					"id": "pair_4341a08b5c934c799f790273c53ef852"
+				}
+			],
+			"headers": [
+				{
+					"name": "Accept",
+					"value": "application/json",
+					"id": "pair_7f66a1847abe44148c09edbf3df204e0"
+				},
+				{
+					"name": "Authorization",
+					"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImp0aSI6IjU5NjM1MmM0ZWQ1YjgifQ.eyJpc3MiOiJpc3N1ZXIiLCJhdWQiOiJhdWRpZW5jZSIsImp0aSI6IjU5NjM1MmM0ZWQ1YjgiLCJpYXQiOjE0OTk2ODE0NzYsIm5iZiI6MTQ5OTY4MTQ3NiwiZXhwIjoxNDk5Njg1MDc2LCJkYXRhIjp7fX0.qTn-HNcPueW-_raGBSivgLf6y5cVHrpl8wjL996eqcA",
+					"id": "pair_dfc1675cfca24cbd82e84d4c857430ab"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1500727959925,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_941ec97f0daa4186b1d72034688b1cec",
+			"parentId": "fld_84d0cce5040b4c0fb3d1262914fd4331",
+			"modified": 1501162678515,
+			"created": 1501158695149,
+			"url": "http://localhost:8080/heliosapi/storages/3",
+			"name": "GET:contacts/<id> - HTTP 200",
+			"description": "",
+			"method": "GET",
+			"body": {
+				"mimeType": "application/json",
+				"text": ""
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Accept",
+					"value": "application/json",
+					"id": "pair_79604af6f03b42f9af2a867e9f77eda9"
+				},
+				{
+					"name": "Authorization",
+					"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImp0aSI6IjU5NjM1MmM0ZWQ1YjgifQ.eyJpc3MiOiJpc3N1ZXIiLCJhdWQiOiJhdWRpZW5jZSIsImp0aSI6IjU5NjM1MmM0ZWQ1YjgiLCJpYXQiOjE0OTk2ODE0NzYsIm5iZiI6MTQ5OTY4MTQ3NiwiZXhwIjoxNDk5Njg1MDc2LCJkYXRhIjp7fX0.qTn-HNcPueW-_raGBSivgLf6y5cVHrpl8wjL996eqcA",
+					"id": "pair_dfc1675cfca24cbd82e84d4c857430ab"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1500727959875,
 			"settingStoreCookies": true,
 			"settingSendCookies": true,
 			"settingDisableRenderRequestBody": false,

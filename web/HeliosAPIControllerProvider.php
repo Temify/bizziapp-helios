@@ -1628,6 +1628,217 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             return $response;
         });
 
+        // Get list of storages
+        $controllers->get('/storages', function (Application $app) 
+        {
+            $paramsOk = true;
+            $result = new \stdClass();
+            $request = $app['request_stack']->getCurrentRequest();
+            $inputParams = $request->query->all();
+
+            $qb = $app['db']->createQueryBuilder();
+            $sqlParams = Array();
+
+            $qb->from('TabStrom');
+
+            // Storage number
+            if(!empty($inputParams['number']))
+            {
+                if(strlen($inputParams['number']) <= 30)
+                {
+                    $qb->andWhere('TabStrom.Cislo LIKE ?');
+                    $sqlParams[] = '%'.$inputParams['number'].'%';
+                }
+                else
+                    $paramsOk = false;
+            }
+
+
+            // Name
+            if(!empty($inputParams['name']))
+            {
+                if(strlen($inputParams['name']) <= 40)
+                {
+                    $qb->andWhere('TabStrom.Nazev LIKE ?');
+                    $sqlParams[] = '%'.$inputParams['name'].'%';
+                }
+                else
+                    $paramsOk = false;
+            }
+
+            // Center number
+            if(!empty($inputParams['centernumber']))
+            {
+                if(strlen($inputParams['centernumber']) <= 21)
+                {
+                    $qb->andWhere('TabStrom.CisloStr LIKE ?');
+                    $sqlParams[] = '%'.$inputParams['centernumber'].'%';
+                }
+                else
+                    $paramsOk = false;
+            }
+
+            if($paramsOk === false)
+                $app->abort(400, "Bad Request.");
+
+            // Get total rows count
+            $qb->select('COUNT(TabStrom.Id) AS totalcount');
+            $app['db']->prepare($qb->getSql());
+            if($app['debug']) $app['monolog']->info('DB Select storage whole list rows - TOTAL COUNT:'.$qb->getSql());
+            $totalRows = $app['db']->fetchAll($qb->getSql(), $sqlParams);
+            $result->totalrows = (int)$totalRows[0]['totalcount'];
+
+            // Get part of lits
+            $qb->select(
+                        'TabStrom.Id', 
+                        'TabStrom.Cislo', 
+                        'TabStrom.Nazev',
+                        'TabStrom.CisloStr'
+                        );
+
+            // Limit from
+            if(!empty($inputParams['listfrom']))
+                if(is_numeric($inputParams['listfrom']))
+                    $qb->setFirstResult($inputParams['listfrom']);
+                else
+                    $paramsOk = false;
+            
+            // Limit to
+            if(!empty($inputParams['listto']))
+                if(is_numeric($inputParams['listto']))
+                    $qb->setMaxResults($inputParams['listto']);
+                else
+                    $paramsOk = false;
+
+			// Sort
+			if(!empty($inputParams['sort']))
+			{
+				switch($inputParams['sort'])
+				{
+					case 'numberasc':
+					{
+						$qb->orderBy('TabStrom.Cislo', 'ASC');
+						break;
+					}
+
+					case 'numberdesc':
+					{
+						$qb->orderBy('TabStrom.Cislo', 'DESC');
+						break;
+					}
+
+					default:
+					{
+                        $paramsOk = false;
+						break;
+					}
+				}
+			}
+
+            if($paramsOk === false)
+                $app->abort(400, "Bad Request.");
+
+            $app['db']->prepare($qb->getSql());
+            if($app['debug']) $app['monolog']->info('DB Select storage list :'.$qb->getSql());
+            $listData = $app['db']->fetchAll($qb->getSql(), $sqlParams);
+
+            foreach($listData as $row)
+            {
+                $newRow = new \stdClass();
+                $newRow->id = (int)$row['Id'];
+                $newRow->regnum = $row['Cislo'];
+                $newRow->name1 = $row['Nazev'];
+                $newRow->name2 = $row['CisloStr'];
+                $result->rows[] = $newRow;
+            }
+
+            //Construct response
+	        if($app['debug']) $app['monolog']->info('Response: data:'.json_encode($result));
+            return $app->json($result);
+        });
+
+        // Get detail of storage
+        $controllers->get('/storages/{id}', function (Application $app, $id) 
+        {
+            if(empty($id) || !is_numeric($id))
+                $app->abort(400, "Bad Request.");
+
+            $result = new \stdClass();
+            $request = $app['request_stack']->getCurrentRequest();   
+
+            $qb = $app['db']->createQueryBuilder();
+            $sqlParams = Array();
+
+            $qb->from('TabStrom', 'TS');
+            $qb->leftJoin('TS', 'TabStavSkladu', 'TSS', 'TSS.IDSklad = TS.Cislo');
+            $qb->leftJoin('TSS', 'TabKmenZbozi', 'TKZ', 'TKZ.ID = TSS.IDKmenZbozi');
+            
+            // Id
+            $qb->andWhere('TS.Id = ?');
+            $sqlParams[] = $id;
+
+            // Get data
+            $qb->select(
+                        'TS.Id',
+                        'TS.Cislo',
+                        'TS.Nazev',
+                        'TS.CisloStr',
+                        'TKZ.ID',
+                        'TKZ.RegCis',
+                        'TKZ.SkupZbo',
+                        'TKZ.Nazev1',
+                        'TKZ.Nazev2',
+                        'TKZ.Nazev3',
+                        'TKZ.Nazev4',
+                        'TKZ.SKP',
+                        'TKZ.Blokovano',
+                        'TSS.Mnozstvi',
+                        'TSS.MnozstviDispo',
+                        'TSS.MnozstviDispo'
+                        );
+
+            $app['db']->prepare($qb->getSql());
+            if($app['debug']) $app['monolog']->info('DB Select storage detail :'.$qb->getSql());
+            $listData = $app['db']->fetchAll($qb->getSql(), $sqlParams);
+
+            if(count($listData) < 1)
+                $app->abort(404, "Not Found.");
+
+                $newRow = new \stdClass();
+            foreach($listData as $row)
+            {
+                $newProduct = new \stdClass();
+                $newProductStorage = new \stdClass();
+
+                // Storage amount
+                $newProductStorage->amount = (int)$row['Mnozstvi'];
+                $newProductStorage->availableamount = (int)$row['MnozstviDispo'];
+                $newProductStorage->dispenseamount = (int)$row['MnozstviKVydeji'];
+
+                // Product info
+                $newProduct->id = (int)$row['ID'];
+                $newProduct->regnum = $row['RegCis'];
+                $newProduct->group = $row['SkupZbo'];
+                $newProduct->name1 = $row['Nazev1'];
+                $newProduct->name2 = $row['Nazev2'];
+                $newProduct->name3 = $row['Nazev3'];
+                $newProduct->name4 = $row['Nazev4'];
+                $newProduct->skp = $row['SKP'];
+                $newProduct->blocked = $row['Blokovano'];
+                $newProduct->storage = $newProductStorage;
+
+                $result->id = (int)$row['Id'];
+                $result->number = $row['Cislo'];
+                $result->name = $row['Nazev'];
+                $result->centernumber = $row['CisloStr'];
+                $result->products[] = $newProduct;
+            }
+
+            //Construct response
+	        if($app['debug']) $app['monolog']->info('Response: data:'.json_encode($result));
+            return $app->json($result);
+        });
+
         return $controllers;
     }
 }
