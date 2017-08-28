@@ -100,6 +100,8 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                         'TCO.PSC',
                         'TCO.IdZeme',
                         'TCO.Kontakt',
+                        'TCO.ICO',
+                        'TCO.DIC',
                         'TCO.Stav',
                         'TCZ.Jmeno',
                         'TCZ.Prijmeni',
@@ -185,6 +187,8 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->phone = [];
                 $newRow->website = [];
                 $newRow->contact = $row['Kontakt'];
+                $newRow->ic = $row['ICO'];
+                $newRow->dic = $row['DIC'];
                 $newRow->status = (int)$row['Stav'];
                 $newRow->address = new \stdClass();
                 $newRow->address->street = $row['Ulice'];
@@ -299,8 +303,8 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->address->zip = $row['PSC'];
                 $newRow->address->country = $row['IdZeme'];
                 $newRow->contact = $row['Kontakt'];
-                $newRow->ic = '';
-                $newRow->dic = '';
+                $newRow->ic = $row['ICO'];
+                $newRow->dic = $row['DIC'];
                 $newRow->status = (int)$row['Stav'];
 
                 $listDataContact = $app['db']->fetchAll('SELECT * FROM TabKontakty WHERE TabKontakty.IDOrg = ?', Array($row['ID']));

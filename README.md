@@ -76,6 +76,8 @@ Output JSON object:
             email: <array of string:email> [IF TabKontakty.Druh = 6 or 10 THEN TabKontakty.Sopojeni, TabKontakty.Sopojeni2],
             phone: <array of string:phone number> [IF TabKontakty.Druh = 1 or 2 THEN TabKontakty.Sopojeni, TabKontakty.Sopojeni2],
             website: <array of string:web URL> [IF TabKontakty.Druh = 7 THEN TabKontakty.Sopojeni, TabKontakty.Sopojeni2],
+            ic: <string:ic number> [TabCisOrg.ICO],
+            dic: <string:dic number> [TabCisOrg.DIC],
             contact: <string:contact>  [TabCisOrg.Kontakt],
             status: <integer:status 0 - 3> [TabCisOrg.Stav],
             address: {
