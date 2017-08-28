@@ -155,6 +155,16 @@ Output JSON object:
         zip: <string:zip code> [TabCisOrg.PSC],
         country: <string:short country code> [TabCisOrg.IdZeme]
     },
+    responsibleperson: {
+        firstname: <string:first name> [TabCisZam.Jmeno],
+        lastname: <string:last name> [TabCisZam.Prijmeni],
+        street: <string:street> [TabCisZam.AdrTrvUlice],
+        streetornumber: <string:orientation number> [TabCisZam.AdrTrvOrCislo],
+        streetdesnumber: <string:descriptive number> [TabCisZam.AdrTrvPopCislo],
+        city: <string:city> [TabCisZam.AdrTrvMisto],
+        zip: <string:zip code> [TabCisZam.AdrTrvPSC],
+        country: <string:short country code> [TabCisZam.AdrTrvZeme]
+    },
     contact: <string:contact>  [TabCisOrg.Kontakt],
     ic: <string:ic number> [TabCisOrg.ICO],
     dic: <string:dic number> [TabCisOrg.DIC],

@@ -114,7 +114,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                         );
 
             
-            // Person
+            // Responsible person
             $qb->leftJoin('TCO', 'TabCisZam', 'TCZ', 'TCO.OdpOs = TCZ.ID');
 
             // Limit from
@@ -198,14 +198,14 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->address->zip = $row['PSC'];
                 $newRow->address->country = $row['IdZeme'];
                 $newRow->responsibleperson = new \stdClass();
-                $newRow->person->firstname = $row['Jmeno'];
-                $newRow->person->lastname = $row['Prijmeni'];
-                $newRow->person->street = $row['AdrTrvUlice'];
-                $newRow->person->streetornumber = $row['AdrTrvOrCislo'];
-                $newRow->person->streetdesnumber = $row['AdrTrvPopCislo'];
-                $newRow->person->city = $row['AdrTrvMisto'];
-                $newRow->person->zip = $row['AdrTrvPSC'];
-                $newRow->person->country = $row['AdrTrvZeme'];
+                $newRow->responsibleperson->firstname = $row['Jmeno'];
+                $newRow->responsibleperson->lastname = $row['Prijmeni'];
+                $newRow->responsibleperson->street = $row['AdrTrvUlice'];
+                $newRow->responsibleperson->streetornumber = $row['AdrTrvOrCislo'];
+                $newRow->responsibleperson->streetdesnumber = $row['AdrTrvPopCislo'];
+                $newRow->responsibleperson->city = $row['AdrTrvMisto'];
+                $newRow->responsibleperson->zip = $row['AdrTrvPSC'];
+                $newRow->responsibleperson->country = $row['AdrTrvZeme'];
 
                 $listDataContact = $app['db']->fetchAll('SELECT * FROM TabKontakty WHERE TabKontakty.IDOrg = ?', Array($row['ID']));
                 foreach($listDataContact as $rowContact)
@@ -274,8 +274,19 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                         'TCO.Kontakt',
                         'TCO.ICO',
                         'TCO.DIC',
-                        'TCO.Stav'
+                        'TCO.Stav',
+                        'TCZ.Jmeno',
+                        'TCZ.Prijmeni',
+                        'TCZ.AdrTrvUlice',
+                        'TCZ.AdrTrvOrCislo',
+                        'TCZ.AdrTrvPopCislo',
+                        'TCZ.AdrTrvMisto',
+                        'TCZ.AdrTrvPSC',
+                        'TCZ.AdrTrvZeme'
                         );
+
+            // Responsible person
+            $qb->leftJoin('TCO', 'TabCisZam', 'TCZ', 'TCO.OdpOs = TCZ.ID');            
 
             $app['db']->prepare($qb->getSql());
             if($app['debug']) $app['monolog']->info('DB Select client detail :'.$qb->getSql());
@@ -306,6 +317,16 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->ic = $row['ICO'];
                 $newRow->dic = $row['DIC'];
                 $newRow->status = (int)$row['Stav'];
+
+                $newRow->responsibleperson = new \stdClass();
+                $newRow->responsibleperson->firstname = $row['Jmeno'];
+                $newRow->responsibleperson->lastname = $row['Prijmeni'];
+                $newRow->responsibleperson->street = $row['AdrTrvUlice'];
+                $newRow->responsibleperson->streetornumber = $row['AdrTrvOrCislo'];
+                $newRow->responsibleperson->streetdesnumber = $row['AdrTrvPopCislo'];
+                $newRow->responsibleperson->city = $row['AdrTrvMisto'];
+                $newRow->responsibleperson->zip = $row['AdrTrvPSC'];
+                $newRow->responsibleperson->country = $row['AdrTrvZeme'];
 
                 $listDataContact = $app['db']->fetchAll('SELECT * FROM TabKontakty WHERE TabKontakty.IDOrg = ?', Array($row['ID']));
                 foreach($listDataContact as $rowContact)
