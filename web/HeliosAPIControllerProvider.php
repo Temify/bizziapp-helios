@@ -51,7 +51,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             {
                 if($inputParams['nameisnotnull'] == 'true')
                 {
-                    $qb->andWhere("(TabCisOrg.Nazev != '' || TabCisOrg.DruhyNazev != '')");
+                    $qb->andWhere("(TabCisOrg.Nazev != '' OR TabCisOrg.DruhyNazev != '')");
                 }
                 else if($inputParams['nameisnotnull'] == 'false')
                 {
@@ -984,20 +984,20 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             $qb = $app['db']->createQueryBuilder();
             $sqlParams = Array();
 
-            $qb->from('TabKmenZbozi');
+            $qb->from('TabKmenZbozi', 'TKZ');
             
             // Name
             if(!empty($inputParams['name']))
             {
                 if(strlen($inputParams['name']) <= 100)
                 {
-                    $qb->andWhere('TabKmenZbozi.Nazev1 LIKE ?');
+                    $qb->andWhere('TKZ.Nazev1 LIKE ?');
                     $sqlParams[] = '%'.$inputParams['name'].'%';
-                    $qb->orWhere('TabKmenZbozi.Nazev2 LIKE ?');
+                    $qb->orWhere('TKZ.Nazev2 LIKE ?');
                     $sqlParams[] = '%'.$inputParams['name'].'%';
-                    $qb->orWhere('TabKmenZbozi.Nazev3 LIKE ?');
+                    $qb->orWhere('TKZ.Nazev3 LIKE ?');
                     $sqlParams[] = '%'.$inputParams['name'].'%';
-                    $qb->orWhere('TabKmenZbozi.Nazev4 LIKE ?');
+                    $qb->orWhere('TKZ.Nazev4 LIKE ?');
                     $sqlParams[] = '%'.$inputParams['name'].'%';
                 }
                 else
@@ -1009,7 +1009,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             {
                 if(strlen($inputParams['centernumber']) <= 30)
                 {
-                    $qb->andWhere('TabKmenZbozi.KmenoveStredisko LIKE ?');
+                    $qb->andWhere('TKZ.KmenoveStredisko LIKE ?');
                     $sqlParams[] = '%'.$inputParams['centernumber'].'%';
                 }
                 else
@@ -1021,7 +1021,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             {
                 if(strlen($inputParams['regnumber']) <= 30)
                 {
-                    $qb->andWhere('TabKmenZbozi.RegCis LIKE ?');
+                    $qb->andWhere('TKZ.RegCis LIKE ?');
                     $sqlParams[] = '%'.$inputParams['regnumber'].'%';
                 }
                 else
@@ -1032,7 +1032,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $app->abort(400, "Bad Request.");
 
             // Get total rows count
-            $qb->select('COUNT(TabKmenZbozi.ID) AS totalcount');
+            $qb->select('COUNT(TKZ.ID) AS totalcount');
             $app['db']->prepare($qb->getSql());
             if($app['debug']) $app['monolog']->info('DB Select product whole list rows - TOTAL COUNT:'.$qb->getSql());
             $totalRows = $app['db']->fetchAll($qb->getSql(), $sqlParams);
@@ -1040,16 +1040,27 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
 
             // Get part of lits
             $qb->select(
-                        'TabKmenZbozi.ID', 
-                        'TabKmenZbozi.RegCis', 
-                        'TabKmenZbozi.SkupZbo',
-                        'TabKmenZbozi.Nazev1',
-                        'TabKmenZbozi.Nazev2',
-                        'TabKmenZbozi.Nazev3',
-                        'TabKmenZbozi.Nazev4',
-                        'TabKmenZbozi.SKP',
-                        'TabKmenZbozi.Blokovano'
+                        'TKZ.ID', 
+                        'TKZ.RegCis', 
+                        'TKZ.SkupZbo',
+                        'TKZ.Nazev1',
+                        'TKZ.Nazev2',
+                        'TKZ.Nazev3',
+                        'TKZ.Nazev4',
+                        'TKZ.SazbaDPHVystup',
+                        'TNC.CenaKC',
+                        'TKZ.SKP',
+                        'TKZ.Blokovano'
                         );
+
+            // Prices
+            if(!empty($inputParams['pricelevel']))
+                if(is_numeric($inputParams['pricelevel']))
+                    $qb->leftJoin('TKZ', 'TabNC', 'TNC', 'TKZ.ID = TNC.IDKmenZbozi AND TNC.CenovaUroven = '.$inputParams['pricelevel']);
+                else 
+                    $paramsOk = false;
+            else
+                $qb->leftJoin('TKZ', 'TabNC', 'TNC', 'TKZ.ID = TNC.IDKmenZbozi AND TNC.CenovaUroven = 1');
 
             // Limit from
             if(!empty($inputParams['listfrom']))
@@ -1072,13 +1083,13 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
 				{
 					case 'nameasc':
 					{
-						$qb->orderBy('TabKmenZbozi.Nazev1', 'ASC');
+						$qb->orderBy('TKZ.Nazev1', 'ASC');
 						break;
 					}
 
 					case 'namedesc':
 					{
-						$qb->orderBy('TabKmenZbozi.Nazev1', 'DESC');
+						$qb->orderBy('TKZ.Nazev1', 'DESC');
 						break;
 					}
 
@@ -1108,6 +1119,12 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->name3 = $row['Nazev3'];
                 $newRow->name4 = $row['Nazev4'];
                 $newRow->skp = $row['SKP'];
+                $newRow->price = (float)floatval($row['CenaKC']);
+                $newRow->pricevat = (float)floatval($row['CenaKC'] * (1 + (0.01 * $row['SazbaDPHVystup'])));
+                if(!empty($row['Nazev3']) && is_numeric($row['Nazev3']))
+                    $newRow->vintage = (int)$row['Nazev3'];
+                else
+                    $newRow->vintage = null;
                 $newRow->blocked = (int)$row['Blokovano'];
                 $result->rows[] = $newRow;
             }
@@ -1129,40 +1146,44 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             $qb = $app['db']->createQueryBuilder();
             $sqlParams = Array();
 
-            $qb->from('TabKmenZbozi');
+            $qb->from('TabKmenZbozi', 'TKZ');
             
             // Id
-            $qb->andWhere('TabKmenZbozi.ID = ?');
+            $qb->andWhere('TKZ.ID = ?');
             $sqlParams[] = $id;
 
             // Get data
             $qb->select(
-                        'TabKmenZbozi.ID',
-                        'TabKmenZbozi.SkupZbo',
-                        'TabKmenZbozi.RegCis',
-                        'TabKmenZbozi.DruhSkladu',
-                        'TabKmenZbozi.Nazev1',
-                        'TabKmenZbozi.Nazev2',
-                        'TabKmenZbozi.Nazev3',
-                        'TabKmenZbozi.Nazev4',
-                        'TabKmenZbozi.SKP',
-                        'TabKmenZbozi.IdSortiment',
-                        'TabKmenZbozi.Upozorneni',
-                        'TabKmenZbozi.Poznamka',
-                        'TabKmenZbozi.MJEvidence',
-                        'TabKmenZbozi.MJInventura',
-                        'TabKmenZbozi.MJVstup',
-                        'TabKmenZbozi.MJVystup',
-                        'TabKmenZbozi.SazbaDPHVstup',
-                        'TabKmenZbozi.SazbaDPHVystup',
-                        'TabKmenZbozi.IDKodPDP',
-                        'TabKmenZbozi.SazbaSDVstup',
-                        'TabKmenZbozi.SazbaSDVystup',
-                        'TabKmenZbozi.MJSD',
-                        'TabKmenZbozi.KodSD',
-                        'TabKmenZbozi.PrepocetMJSD',
-                        'TabKmenZbozi.Blokovano'
+                        'TKZ.ID',
+                        'TKZ.SkupZbo',
+                        'TKZ.RegCis',
+                        'TKZ.DruhSkladu',
+                        'TKZ.Nazev1',
+                        'TKZ.Nazev2',
+                        'TKZ.Nazev3',
+                        'TKZ.Nazev4',
+                        'TKZ.SKP',
+                        'TKZ.IdSortiment',
+                        'TKZ.Upozorneni',
+                        'TKZ.Poznamka',
+                        'TKZ.MJEvidence',
+                        'TKZ.MJInventura',
+                        'TKZ.MJVstup',
+                        'TKZ.MJVystup',
+                        'TKZ.SazbaDPHVstup',
+                        'TKZ.SazbaDPHVystup',
+                        'TKZ.IDKodPDP',
+                        'TKZ.SazbaSDVstup',
+                        'TKZ.SazbaSDVystup',
+                        'TKZ.MJSD',
+                        'TKZ.KodSD',
+                        'TKZ.PrepocetMJSD',
+                        'TKZ.Blokovano',
+                        'TNC.CenaKC'
                         );
+
+            // Prices
+            $qb->leftJoin('TKZ', 'TabNC', 'TNC', 'TKZ.ID = TNC.IDKmenZbozi AND TNC.CenovaUroven = 1');
 
             $app['db']->prepare($qb->getSql());
             if($app['debug']) $app['monolog']->info('DB Select product detail :'.$qb->getSql());
@@ -1183,6 +1204,12 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->name3 = $row['Nazev3'];
                 $newRow->name4 = $row['Nazev4'];
                 $newRow->skp = $row['SKP'];
+                $newRow->price = (float)floatval($row['CenaKC']);
+                $newRow->pricevat = (float)floatval($row['CenaKC'] * (1 + (0.01 * $row['SazbaDPHVystup'])));
+                if(!empty($row['Nazev3']) && is_numeric($row['Nazev3']))
+                    $newRow->vintage = (int)$row['Nazev3'];
+                else
+                    $newRow->vintage = null;
                 $newRow->range = $row['IdSortiment'];
                 $newRow->notice = $row['Upozorneni'];
                 $newRow->note = $row['Poznamka'];
