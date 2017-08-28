@@ -1,8 +1,8 @@
 {
 	"_type": "export",
 	"__export_format": 3,
-	"__export_date": "2017-07-27T13:38:50.649Z",
-	"__export_source": "insomnia.desktop.app:v5.6.3",
+	"__export_date": "2017-08-28T14:31:23.792Z",
+	"__export_source": "insomnia.desktop.app:v5.7.14",
 	"resources": [
 		{
 			"_id": "wrk_905933e2087744489f933b33bd6bb288",
@@ -22,6 +22,7 @@
 			"name": "Base Environment",
 			"data": {},
 			"color": null,
+			"isPrivate": false,
 			"_type": "environment"
 		},
 		{
@@ -146,7 +147,7 @@
 		{
 			"_id": "req_61e581295f1e4df99db1dcb8370087af",
 			"parentId": "fld_c1fa6b306d3c4029944ab8e362ef834f",
-			"modified": 1500376089871,
+			"modified": 1503927807782,
 			"created": 1500299012047,
 			"url": "http://helios-app.eu-central-1.elasticbeanstalk.com/web/index.php/heliosapi/clients",
 			"name": "GET:clients - HTTP 200",
@@ -159,13 +160,18 @@
 			"parameters": [
 				{
 					"name": "sort",
-					"value": "iddesc",
+					"value": "idasc",
 					"id": "pair_54420de7638f4aa0acd9b810622b41cd"
 				},
 				{
 					"name": "nameisnotnull",
-					"value": "false",
+					"value": "true",
 					"id": "pair_a2462b317a0f4b88811a738233c6dcab"
+				},
+				{
+					"name": "listto",
+					"value": "10",
+					"id": "pair_9a5cb447bbf7410ba53ea030d0355545"
 				}
 			],
 			"headers": [
@@ -230,9 +236,9 @@
 		{
 			"_id": "req_d23421227b1347008da9a1d423cb612a",
 			"parentId": "fld_c1fa6b306d3c4029944ab8e362ef834f",
-			"modified": 1500376091856,
+			"modified": 1503929158767,
 			"created": 1500299409945,
-			"url": "http://helios-app.eu-central-1.elasticbeanstalk.com/web/index.php/heliosapi/clients/4",
+			"url": "http://helios-app.eu-central-1.elasticbeanstalk.com/web/index.php/heliosapi/clients/47",
 			"name": "GET:clients/<id> - HTTP 200",
 			"description": "",
 			"method": "GET",
@@ -1009,7 +1015,7 @@
 		{
 			"_id": "req_fa8ae65dcfce412c906c32ddb9464e4e",
 			"parentId": "fld_cda6d8d5a396499abb1afd3f5065e981",
-			"modified": 1500377892063,
+			"modified": 1503926767913,
 			"created": 1500373266314,
 			"url": "http://localhost:8080/heliosapi/clients",
 			"name": "GET:clients - HTTP 200",
@@ -1022,18 +1028,18 @@
 			"parameters": [
 				{
 					"name": "sort",
-					"value": "iddesc",
+					"value": "idasc",
 					"id": "pair_54420de7638f4aa0acd9b810622b41cd"
 				},
 				{
 					"name": "nameisnotnull",
-					"value": "false",
+					"value": "true",
 					"id": "pair_a2462b317a0f4b88811a738233c6dcab"
 				},
 				{
-					"name": "",
-					"value": "",
-					"id": "pair_6c8ca0334c2b401086c94ef3f114e26d"
+					"name": "listto",
+					"value": "10",
+					"id": "pair_fd572c6043da4ff281ba43c6e5d3f825"
 				}
 			],
 			"headers": [
@@ -1059,9 +1065,9 @@
 		{
 			"_id": "req_f21fc64e7e7c4b49a996fc8674291ca3",
 			"parentId": "fld_cda6d8d5a396499abb1afd3f5065e981",
-			"modified": 1500376005110,
+			"modified": 1503929150536,
 			"created": 1500373270025,
-			"url": "http://localhost:8080/heliosapi/clients/4",
+			"url": "http://localhost:8080/heliosapi/clients/47",
 			"name": "GET:clients/<id> - HTTP 200",
 			"description": "",
 			"method": "GET",
