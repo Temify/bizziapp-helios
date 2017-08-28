@@ -30,16 +30,16 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             $qb = $app['db']->createQueryBuilder();
             $sqlParams = Array();
 
-            $qb->from('TabCisOrg');
+            $qb->from('TabCisOrg', 'TCO');
 
             // Name
             if(!empty($inputParams['name']))
             {
                 if(strlen($inputParams['name']) <= 100)
                 {
-                    $qb->andWhere('TabCisOrg.Nazev LIKE ?');
+                    $qb->andWhere('TCO.Nazev LIKE ?');
                     $sqlParams[] = '%'.$inputParams['name'].'%';
-                    $qb->orWhere('TabCisOrg.DruhyNazev LIKE ?');
+                    $qb->orWhere('TCO.DruhyNazev LIKE ?');
                     $sqlParams[] = '%'.$inputParams['name'].'%';
                 }
                 else
@@ -51,12 +51,12 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             {
                 if($inputParams['nameisnotnull'] == 'true')
                 {
-                    $qb->andWhere("(TabCisOrg.Nazev != '' OR TabCisOrg.DruhyNazev != '')");
+                    $qb->andWhere("(TCO.Nazev != '' OR TCO.DruhyNazev != '')");
                 }
                 else if($inputParams['nameisnotnull'] == 'false')
                 {
-                    $qb->andWhere("TabCisOrg.Nazev = ''");
-                    $qb->andWhere("TabCisOrg.DruhyNazev = ''");
+                    $qb->andWhere("TCO.Nazev = ''");
+                    $qb->andWhere("TCO.DruhyNazev = ''");
                 }
                 else
                     $paramsOk = false;
@@ -67,7 +67,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             {
                 if(is_numeric($inputParams['status']))
                 {
-                    $qb->andWhere('TabCisOrg.Stav = ?');
+                    $qb->andWhere('TCO.Stav = ?');
                     $sqlParams[] = $inputParams['status'];
                 }
                 else
@@ -78,7 +78,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $app->abort(400, "Bad Request.");
 
             // Get total rows count
-            $qb->select('COUNT(TabCisOrg.ID) AS totalcount');
+            $qb->select('COUNT(TCO.ID) AS totalcount');
             $app['db']->prepare($qb->getSql());
             if($app['debug']) $app['monolog']->info('DB Select client whole list rows - TOTAL COUNT:'.$qb->getSql());
 
@@ -88,14 +88,32 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             $result->totalrows = $totalRows[0]['totalcount'];
             // Get part of lits
             $qb->select(
-                        'TabCisOrg.ID', 
-                        'TabCisOrg.CisloOrg', 
-                        'TabCisOrg.NadrizenaOrg',
-                        'TabCisOrg.Nazev',
-                        'TabCisOrg.DruhyNazev',
-                        'TabCisOrg.Kontakt',
-                        'TabCisOrg.Stav'
+                        'TCO.ID', 
+                        'TCO.CisloOrg', 
+                        'TCO.NadrizenaOrg',
+                        'TCO.Nazev',
+                        'TCO.DruhyNazev',
+                        'TCO.Ulice',
+                        'TCO.OrCislo',
+                        'TCO.PopCislo',
+                        'TCO.Misto',
+                        'TCO.PSC',
+                        'TCO.IdZeme',
+                        'TCO.Kontakt',
+                        'TCO.Stav',
+                        'TCZ.Jmeno',
+                        'TCZ.Prijmeni',
+                        'TCZ.AdrTrvUlice',
+                        'TCZ.AdrTrvOrCislo',
+                        'TCZ.AdrTrvPopCislo',
+                        'TCZ.AdrTrvMisto',
+                        'TCZ.AdrTrvPSC',
+                        'TCZ.AdrTrvZeme'
                         );
+
+            
+            // Person
+            $qb->leftJoin('TCO', 'TabCisZam', 'TCZ', 'TCO.OdpOs = TCZ.ID');
 
             // Limit from
             if(!empty($inputParams['listfrom']))
@@ -118,25 +136,25 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
 				{
 					case 'idasc':
 					{
-						$qb->orderBy('TabCisOrg.ID', 'ASC');
+						$qb->orderBy('TCO.ID', 'ASC');
 						break;
 					}
 
 					case 'iddesc':
 					{
-						$qb->orderBy('TabCisOrg.ID', 'DESC');
+						$qb->orderBy('TCO.ID', 'DESC');
 						break;
 					}
 
 					case 'nameasc':
 					{
-						$qb->orderBy('TabCisOrg.Nazev', 'ASC');
+						$qb->orderBy('TCO.Nazev', 'ASC');
 						break;
 					}
 
 					case 'namedesc':
 					{
-						$qb->orderBy('TabCisOrg.Nazev', 'DESC');
+						$qb->orderBy('TCO.Nazev', 'DESC');
 						break;
 					}
 
@@ -163,11 +181,54 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->parentid = (int)$row['NadrizenaOrg'];
                 $newRow->name = $row['Nazev'];
                 $newRow->name2 = $row['DruhyNazev'];
-                $newRow->email = '';
-                $newRow->phone = '';
+                $newRow->email = [];
+                $newRow->phone = [];
+                $newRow->website = [];
                 $newRow->contact = $row['Kontakt'];
-                $newRow->website = $row['web'];
                 $newRow->status = (int)$row['Stav'];
+                $newRow->address = new \stdClass();
+                $newRow->address->street = $row['Ulice'];
+                $newRow->address->streetorinumber = $row['OrCislo'];
+                $newRow->address->streetdesnumber = $row['PopCislo'];
+                $newRow->address->city = $row['Misto'];
+                $newRow->address->zip = $row['PSC'];
+                $newRow->address->country = $row['IdZeme'];
+                $newRow->responsibleperson = new \stdClass();
+                $newRow->person->firstname = $row['Jmeno'];
+                $newRow->person->lastname = $row['Prijmeni'];
+                $newRow->person->street = $row['AdrTrvUlice'];
+                $newRow->person->streetornumber = $row['AdrTrvOrCislo'];
+                $newRow->person->streetdesnumber = $row['AdrTrvPopCislo'];
+                $newRow->person->city = $row['AdrTrvMisto'];
+                $newRow->person->zip = $row['AdrTrvPSC'];
+                $newRow->person->country = $row['AdrTrvZeme'];
+
+                $listDataContact = $app['db']->fetchAll('SELECT * FROM TabKontakty WHERE TabKontakty.IDOrg = ?', Array($row['ID']));
+                foreach($listDataContact as $rowContact)
+                {
+                    //'1' = phone-hard line, '2' = phone-mobile, '3' = fax, '4' = telex, '5' = operator, '6' = email, '7' = website, '8' = ico, '9' = ip address, '10' = bulk for email, '11' = skype, '12' = windows live messenger, '13' = login id, '14' = sms, '15' = data box
+                    switch($rowContact['Druh'])
+                        {
+                            case 6: //Email
+                            case 10:
+                            {
+                                $newRow->email[] = (!empty($rowContact['Spojeni']))?(!empty($rowContact['Spojeni2']))?$rowContact['Spojeni'].','.$rowContact['Spojeni2']:$rowContact['Spojeni']:$rowContact['Spojeni2'];
+                                break;
+                            }
+                            case 1: //Phone
+                            case 2:
+                            {
+                                $newRow->phone[] = (!empty($rowContact['Spojeni']))?(!empty($rowContact['Spojeni2']))?$rowContact['Spojeni'].','.$rowContact['Spojeni2']:$rowContact['Spojeni']:$rowContact['Spojeni2'];
+                                break;
+                            }
+                            case 7: //Website
+                            {
+                                $newRow->website[] = (!empty($rowContact['Spojeni']))?(!empty($rowContact['Spojeni2']))?$rowContact['Spojeni'].','.$rowContact['Spojeni2']:$rowContact['Spojeni']:$rowContact['Spojeni2'];
+                                break;
+                            }
+                        }
+                }
+
                 $result->rows[] = $newRow;
             }
 
@@ -187,28 +248,29 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             $qb = $app['db']->createQueryBuilder();
             $sqlParams = Array();
 
-            $qb->from('TabCisOrg');
+            $qb->from('TabCisOrg', 'TCO');
             
             // Id
-            $qb->andWhere('TabCisOrg.ID = ?');
+            $qb->andWhere('TCO.ID = ?');
             $sqlParams[] = $id;
 
             // Get data
             $qb->select(
-                        'TabCisOrg.ID',
-                        'TabCisOrg.CisloOrg' ,
-                        'TabCisOrg.NadrizenaOrg',
-                        'TabCisOrg.Nazev',
-                        'TabCisOrg.DruhyNazev',
-                        'TabCisOrg.Ulice',
-                        'TabCisOrg.OrCislo',
-                        'TabCisOrg.PopCislo',
-                        'TabCisOrg.Misto',
-                        'TabCisOrg.PSC',
-                        'TabCisOrg.Kontakt',
-                        'TabCisOrg.ICO',
-                        'TabCisOrg.DIC',
-                        'TabCisOrg.Stav'
+                        'TCO.ID',
+                        'TCO.CisloOrg' ,
+                        'TCO.NadrizenaOrg',
+                        'TCO.Nazev',
+                        'TCO.DruhyNazev',
+                        'TCO.Ulice',
+                        'TCO.OrCislo',
+                        'TCO.PopCislo',
+                        'TCO.Misto',
+                        'TCO.PSC',
+                        'TCO.IdZeme',
+                        'TCO.Kontakt',
+                        'TCO.ICO',
+                        'TCO.DIC',
+                        'TCO.Stav'
                         );
 
             $app['db']->prepare($qb->getSql());
@@ -226,19 +288,47 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->parentid = (int)$row['NadrizenaOrg'];
                 $newRow->name = $row['Nazev'];
                 $newRow->name2 = $row['DruhyNazev'];
-                $newRow->email = '';
-                $newRow->phone = '';
+                $newRow->email = [];
+                $newRow->phone = [];
+                $newRow->website = [];
                 $newRow->address = new \stdClass();
                 $newRow->address->street = $row['Ulice'];
                 $newRow->address->streetorinumber = $row['OrCislo'];
                 $newRow->address->streetdesnumber = $row['PopCislo'];
                 $newRow->address->city = $row['Misto'];
                 $newRow->address->zip = $row['PSC'];
+                $newRow->address->country = $row['IdZeme'];
                 $newRow->contact = $row['Kontakt'];
                 $newRow->ic = '';
                 $newRow->dic = '';
-                $newRow->website = '';
                 $newRow->status = (int)$row['Stav'];
+
+                $listDataContact = $app['db']->fetchAll('SELECT * FROM TabKontakty WHERE TabKontakty.IDOrg = ?', Array($row['ID']));
+                foreach($listDataContact as $rowContact)
+                {
+                    //'1' = phone-hard line, '2' = phone-mobile, '3' = fax, '4' = telex, '5' = operator, '6' = email, '7' = website, '8' = ico, '9' = ip address, '10' = bulk for email, '11' = skype, '12' = windows live messenger, '13' = login id, '14' = sms, '15' = data box
+                    switch($rowContact['Druh'])
+                        {
+                            case 6: //Email
+                            case 10:
+                            {
+                                $newRow->email[] = (!empty($rowContact['Spojeni']))?(!empty($rowContact['Spojeni2']))?$rowContact['Spojeni'].','.$rowContact['Spojeni2']:$rowContact['Spojeni']:$rowContact['Spojeni2'];
+                                break;
+                            }
+                            case 1: //Phone
+                            case 2:
+                            {
+                                $newRow->phone[] = (!empty($rowContact['Spojeni']))?(!empty($rowContact['Spojeni2']))?$rowContact['Spojeni'].','.$rowContact['Spojeni2']:$rowContact['Spojeni']:$rowContact['Spojeni2'];
+                                break;
+                            }
+                            case 7: //Website
+                            {
+                                $newRow->website[] = (!empty($rowContact['Spojeni']))?(!empty($rowContact['Spojeni2']))?$rowContact['Spojeni'].','.$rowContact['Spojeni2']:$rowContact['Spojeni']:$rowContact['Spojeni2'];
+                                break;
+                            }
+                        }
+                }
+
                 $result = $newRow;
             }
 

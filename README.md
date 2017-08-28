@@ -73,11 +73,29 @@ Output JSON object:
             parentid: <integer:parent client id> [TabCisOrg.NadrizenaOrg],
             name: <string:name> [TabCisOrg.Nazev],
             name2: <string:second name> [TabCisOrg.DruhyNazev],
-            email: <string:email> [],
-            phone: <string:phone number> [],
+            email: <array of string:email> [IF TabKontakty.Druh = 6 or 10 THEN TabKontakty.Sopojeni, TabKontakty.Sopojeni2],
+            phone: <array of string:phone number> [IF TabKontakty.Druh = 1 or 2 THEN TabKontakty.Sopojeni, TabKontakty.Sopojeni2],
+            website: <array of string:web URL> [IF TabKontakty.Druh = 7 THEN TabKontakty.Sopojeni, TabKontakty.Sopojeni2],
             contact: <string:contact>  [TabCisOrg.Kontakt],
-            website: <string:web URL> [],
-            status: <integer:status 0 - 3> [TabCisOrg.Stav]
+            status: <integer:status 0 - 3> [TabCisOrg.Stav],
+            address: {
+                street: <string:street> [TabCisOrg.Ulice],
+                streetorinumber: <string:orientation number> [TabCisOrg.OrCislo],
+                streetdesnumber: <string:descriptive number> [TabCisOrg.PopCislo],
+                city: <string:city> [TabCisOrg.Misto],
+                zip: <string:zip code> [TabCisOrg.PSC],
+                country: <string:short country code> [TabCisOrg.IdZeme]
+            },
+            responsibleperson: {
+                firstname: <string:first name> [TabCisZam.Jmeno],
+                lastname: <string:last name> [TabCisZam.Prijmeni],
+                street: <string:street> [TabCisZam.AdrTrvUlice],
+                streetornumber: <string:orientation number> [TabCisZam.AdrTrvOrCislo],
+                streetdesnumber: <string:descriptive number> [TabCisZam.AdrTrvPopCislo],
+                city: <string:city> [TabCisZam.AdrTrvMisto],
+                zip: <string:zip code> [TabCisZam.AdrTrvPSC],
+                country: <string:short country code> [TabCisZam.AdrTrvZeme]
+            }
         }
     },
     totalrows: <integer:number of total count of rows of whole list from which is listfrom and listto returned>
@@ -124,19 +142,20 @@ Output JSON object:
     parentid: <integer:parent client id> [TabCisOrg.NadrizenaOrg],
     name: <string:name> [TabCisOrg.Nazev],
     name2: <string:second name> [TabCisOrg.DruhyNazev],
-    email: <string:email> [],
-    phone: <string:phone number> [],
+    email: <array of string:email> [IF TabKontakty.Druh = 6 or 10 THEN TabKontakty.Sopojeni, TabKontakty.Sopojeni2],
+    phone: <array of string:phone number> [IF TabKontakty.Druh = 1 or 2 THEN TabKontakty.Sopojeni, TabKontakty.Sopojeni2],
+    website: <array of string:web URL> [IF TabKontakty.Druh = 7 THEN TabKontakty.Sopojeni, TabKontakty.Sopojeni2],
     address: {
         street: <string:street> [TabCisOrg.Ulice],
         streetorinumber: <string:orientation number> [TabCisOrg.OrCislo],
         streetdesnumber: <string:descriptive number> [TabCisOrg.PopCislo],
         city: <string:city> [TabCisOrg.Misto],
-        zip: <string:zip code> [TabCisOrg.PSC]
+        zip: <string:zip code> [TabCisOrg.PSC],
+        country: <string:short country code> [TabCisOrg.IdZeme]
     },
     contact: <string:contact>  [TabCisOrg.Kontakt],
     ic: <string:ic number> [TabCisOrg.ICO],
     dic: <string:dic number> [TabCisOrg.DIC],
-    website: <string:web URL> [],
     status: <integer:status> (0 = active, 1 = blocked, 2 = disabled, 3 = potential) [TabCisOrg.Stav]
 }
 ```
