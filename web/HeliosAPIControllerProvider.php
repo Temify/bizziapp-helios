@@ -174,6 +174,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             $app['db']->prepare($qb->getSql());
             if($app['debug']) $app['monolog']->info('DB Select client list :'.$qb->getSql());
             $listData = $app['db']->fetchAll($qb->getSql(), $sqlParams);
+            $contactReferences = [];
 
             foreach($listData as $row)
             {
@@ -183,9 +184,6 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->parentid = (int)$row['NadrizenaOrg'];
                 $newRow->name = $row['Nazev'];
                 $newRow->name2 = $row['DruhyNazev'];
-                $newRow->email = [];
-                $newRow->phone = [];
-                $newRow->website = [];
                 $newRow->contact = $row['Kontakt'];
                 $newRow->ic = $row['ICO'];
                 $newRow->dic = $row['DIC'];
@@ -206,34 +204,50 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->responsibleperson->city = $row['AdrTrvMisto'];
                 $newRow->responsibleperson->zip = $row['AdrTrvPSC'];
                 $newRow->responsibleperson->country = $row['AdrTrvZeme'];
-
-                $listDataContact = $app['db']->fetchAll('SELECT * FROM TabKontakty WHERE TabKontakty.IDOrg = ?', Array($row['ID']));
-                foreach($listDataContact as $rowContact)
-                {
-                    //'1' = phone-hard line, '2' = phone-mobile, '3' = fax, '4' = telex, '5' = operator, '6' = email, '7' = website, '8' = ico, '9' = ip address, '10' = bulk for email, '11' = skype, '12' = windows live messenger, '13' = login id, '14' = sms, '15' = data box
-                    switch($rowContact['Druh'])
-                        {
-                            case 6: //Email
-                            case 10:
-                            {
-                                $newRow->email[] = (!empty($rowContact['Spojeni']))?(!empty($rowContact['Spojeni2']))?$rowContact['Spojeni'].','.$rowContact['Spojeni2']:$rowContact['Spojeni']:$rowContact['Spojeni2'];
-                                break;
-                            }
-                            case 1: //Phone
-                            case 2:
-                            {
-                                $newRow->phone[] = (!empty($rowContact['Spojeni']))?(!empty($rowContact['Spojeni2']))?$rowContact['Spojeni'].','.$rowContact['Spojeni2']:$rowContact['Spojeni']:$rowContact['Spojeni2'];
-                                break;
-                            }
-                            case 7: //Website
-                            {
-                                $newRow->website[] = (!empty($rowContact['Spojeni']))?(!empty($rowContact['Spojeni2']))?$rowContact['Spojeni'].','.$rowContact['Spojeni2']:$rowContact['Spojeni']:$rowContact['Spojeni2'];
-                                break;
-                            }
-                        }
-                }
-
+                
+                $contactReferences[(int)$row['ID']] = ['email' => [], 'phone' => [], 'website' => []];
+                $newRow->email[] = &$contactReferences[(int)$row['ID']]['email'];
+                $newRow->phone[] = &$contactReferences[(int)$row['ID']]['phone'];
+                $newRow->website[] = &$contactReferences[(int)$row['ID']]['website'];
+                
                 $result->rows[] = $newRow;
+            }
+
+            //Get contacts
+            //If only sublist is returned
+            if(count($result->rows) < $result->totalrows)
+            {
+                // print 'SELECT IDOrg, Druh, Spojeni, Spojeni2 FROM TabKontakty WHERE TabKontakty.IDOrg = ?'.print_r(array_keys($contactReferences), true);
+                // die();
+                $listDataContact = $app['db']->fetchAll('SELECT IDOrg, Druh, Spojeni, Spojeni2 FROM TabKontakty WHERE TabKontakty.IDOrg IN (?)', array_keys($contactReferences));
+            }
+            else
+                $listDataContact = $app['db']->fetchAll('SELECT IDOrg, Druh, Spojeni, Spojeni2 FROM TabKontakty WHERE TabKontakty.IDOrg IS NOT NULL');
+
+            foreach($listDataContact as $rowContact)
+            {
+
+                //'1' = phone-hard line, '2' = phone-mobile, '3' = fax, '4' = telex, '5' = operator, '6' = email, '7' = website, '8' = ico, '9' = ip address, '10' = bulk for email, '11' = skype, '12' = windows live messenger, '13' = login id, '14' = sms, '15' = data box
+                switch($rowContact['Druh'])
+                    {
+                        case 6: //Email
+                        case 10:
+                        {
+                            $contactReferences[(int)$rowContact['IDOrg']]['email'][] = (!empty($rowContact['Spojeni']))?(!empty($rowContact['Spojeni2']))?$rowContact['Spojeni'].','.$rowContact['Spojeni2']:$rowContact['Spojeni']:$rowContact['Spojeni2'];
+                            break;
+                        }
+                        case 1: //Phone
+                        case 2:
+                        {
+                            $contactReferences[(int)$rowContact['IDOrg']]['phone'][] = (!empty($rowContact['Spojeni']))?(!empty($rowContact['Spojeni2']))?$rowContact['Spojeni'].','.$rowContact['Spojeni2']:$rowContact['Spojeni']:$rowContact['Spojeni2'];
+                            break;
+                        }
+                        case 7: //Website
+                        {
+                            $contactReferences[(int)$rowContact['IDOrg']]['website'][] = (!empty($rowContact['Spojeni']))?(!empty($rowContact['Spojeni2']))?$rowContact['Spojeni'].','.$rowContact['Spojeni2']:$rowContact['Spojeni']:$rowContact['Spojeni2'];
+                            break;
+                        }
+                    }
             }
 
             //Construct response

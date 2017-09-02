@@ -1,7 +1,7 @@
 {
 	"_type": "export",
 	"__export_format": 3,
-	"__export_date": "2017-08-28T14:31:23.792Z",
+	"__export_date": "2017-09-02T12:06:54.543Z",
 	"__export_source": "insomnia.desktop.app:v5.7.14",
 	"resources": [
 		{
@@ -147,7 +147,7 @@
 		{
 			"_id": "req_61e581295f1e4df99db1dcb8370087af",
 			"parentId": "fld_c1fa6b306d3c4029944ab8e362ef834f",
-			"modified": 1503927807782,
+			"modified": 1504353508353,
 			"created": 1500299012047,
 			"url": "http://helios-app.eu-central-1.elasticbeanstalk.com/web/index.php/heliosapi/clients",
 			"name": "GET:clients - HTTP 200",
@@ -171,7 +171,8 @@
 				{
 					"name": "listto",
 					"value": "10",
-					"id": "pair_9a5cb447bbf7410ba53ea030d0355545"
+					"id": "pair_9a5cb447bbf7410ba53ea030d0355545",
+					"disabled": false
 				}
 			],
 			"headers": [
@@ -1015,7 +1016,7 @@
 		{
 			"_id": "req_fa8ae65dcfce412c906c32ddb9464e4e",
 			"parentId": "fld_cda6d8d5a396499abb1afd3f5065e981",
-			"modified": 1503926767913,
+			"modified": 1504354003594,
 			"created": 1500373266314,
 			"url": "http://localhost:8080/heliosapi/clients",
 			"name": "GET:clients - HTTP 200",
@@ -1039,7 +1040,8 @@
 				{
 					"name": "listto",
 					"value": "10",
-					"id": "pair_fd572c6043da4ff281ba43c6e5d3f825"
+					"id": "pair_fd572c6043da4ff281ba43c6e5d3f825",
+					"disabled": false
 				}
 			],
 			"headers": [
