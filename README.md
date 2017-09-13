@@ -352,7 +352,13 @@ regnumber: <string length 1-30:registration number> [TabKmenZbozi.RegCis],
 listfrom: {optional} <integer:position from complete list where result begins>,
 listto: {optional} <integer:position from complete list where result ends>,
 sort: {optional} <string:by which should be ordered> ('nameasc', 'namedesc') [TabKmenZbozi.Nazev1],
-pricelevel: {optional} <integer:price level> (defaul = 1) [TabNC.CenovaUroven]
+pricelevel: {optional} <integer:price level> (default = 1) [TabNC.CenovaUroven],
+donotorderhidden: {optional} <integer length 1:hide products with donotorder=1 with no items in storage> [IF TabKmenZbozi_EXT._Neobjednavat == 1 AND TabStavSkladu.MnozstviDispo == 0 AND TabStavSkladu.MnozstviKPrijmu == 0 AND TabStavSkladu.MnozstviKVydeji == 0],
+pricefrom: {optional} <integer:product price without vat is equal or higher> [TabNC.CenaKC],
+priceto: {optional} <integer:product price without vat is less or equal> [TabNC.CenaKC],
+usualorigincountry: {optional} <string:short code of country> [TabKmenZbozi.ObvyklaZemePuvodu],
+goodskind: <integer:typ of goods> (NULL = not inserted, 1 = common, 2 = allocation, 3 = rarity, 4 = clearance sale, 5 = archive, 6 = POS material)[TabKmenZbozi_EXT._DruhVina],
+goodstype: <integer:typ of wine> (NULL = not inserted, 1 = white, 2 = rose, 3 = red, 4 = champagne, 5 = sparkling) [TabKmenZbozi_EXT._TypVina]
 ```
 
 #### Response
@@ -377,7 +383,20 @@ Output JSON object:
             price: <float:price without VAT> [TabNC.CenaKC],
             pricevat: <float:price with VAT> [TabNC.CenaKC * (1 + (0,01 * TabKmenZbozi.SazbaDPHVystup))],
             vintage: <integer:vintage of wine> [TabKmenZbozi.Nazev3],
-            blocked: <integer:product is active or archived> (0 = active, 1 = archived) [TabKmenZbozi.Blokovano]
+            blocked: <integer:product is active or archived> (0 = active, 1 = archived) [TabKmenZbozi.Blokovano],
+            donotorder: <integer:do not orged this produc anymore> (0 = order, 1 = do not order) [TabKmenZbozi_EXT._Neobjednavat],
+            goodskind: <integer:typ of goods> (NULL = not inserted, 1 = common, 2 = allocation, 3 = rarity, 4 = clearance sale, 5 = archive, 6 = POS material),[TabKmenZbozi_EXT._DruhVina],
+            ivk: <integer:wine accessories> (NULL/0 = wine, 1 = accessories) [TabKmenZbozi_EXT._IVK],
+            usualorigincountry: <string:usual country of origin> [TabKmenZbozi.ObvyklaZemePuvodu],
+            goodstype: <integer:typ of wine> (NULL = not inserted, 1 = white, 2 = rose, 3 = red, 4 = champagne, 5 = sparkling) [TabKmenZbozi_EXT._TypVina],
+            storages: [
+                {
+                    storageid: <int:id of storage> (3 = Bezny sklad, 6 = Danovy sklad) [TabStrom.Id],
+                    quantityavailable: <integer:quantity of goods available> [TabStavSkladu.MnozstviDispo],
+                    quantitytoreceive: <integer:quantity of goods to receive> [TabStavSkladu.MnozstviKPrijmu],
+                    quantitytodispense: <integer:quantity of goods to dispense> [TabStavSkladu.MnozstviKVydeji]
+                }
+            ]
         }
     },
     totalrows: <integer:total count of rows of whole list from which is listfrom and listto returned>
@@ -422,7 +441,7 @@ Output JSON object:
     group: <string:group id> [TabKmenZbozi.SkupZbo],
     regnum: <string:registration number> [TabKmenZbozi.RegCis],
     storagetype: {optional} <integer:type of storage> (0 = service, 1 = global configuration, 2 = FIFO, 3 = averages, 4 = customs warehouse) [TabKmenZbozi.DruhSkladu],
-    name: <string:first product name> [TabKmenZbozi.Nazev1],
+    name1: <string:first product name> [TabKmenZbozi.Nazev1],
     name2: <string:second product name> [TabKmenZbozi.Nazev2],
     name3: <string:third product name> [TabKmenZbozi.Nazev3],
     name4: <string:fourth product name> [TabKmenZbozi.Nazev4],
@@ -445,8 +464,20 @@ Output JSON object:
     mued: <string:measurement unit of excise duty> [TabKmenZbozi.MJSD],
     edcode: <string:excise duty code> [TabKmenZbozi.KodSD],
     edcalc: <float:excise duty calculation> [TabKmenZbozi.PrepocetMJSD],
-    blocked: <integer:product is active or archived> (0 = active, 1 = archived) [TabKmenZbozi.Blokovano]
-}
+    blocked: <integer:product is active or archived> (0 = active, 1 = archived) [TabKmenZbozi.Blokovano],
+    donotorder: <integer:do not orged this produc anymore> (0 = order, 1 = do not order) [TabKmenZbozi_EXT._Neobjednavat],
+    goodskind: <integer:typ o goods> (NULL = not inserted, 1 = common, 2 = allocation, 3 = rarity, 4 = clearance sale, 5 = archive, 6 = POS material) [TabKmenZbozi_EXT._DruhVina],
+    ivk: <integer:wine accessories> (NULL/0 = wine, 1 = accessories) [TabKmenZbozi_EXT._IVK],
+    usualorigincountry: <string:usual country of origin> [TabKmenZbozi.ObvyklaZemePuvodu],
+    goodstype: <integer:typ o wine> (NULL = not inserted, 1 = white, 2 = rose, 3 = red, 4 = champagne, 5 = sparkling) [TabKmenZbozi_EXT._TypVina],
+    storages: [
+        {
+            storageid: <int:id of storage> (3 = Bezny sklad, 6 = Danovy sklad) [TabStrom.Id],
+            quantityavailable: <integer:quantity of goods available> [TabStavSkladu.MnozstviDispo],
+            quantitytoreceive: <integer:quantity of goods to receive> [TabStavSkladu.MnozstviKPrijmu],
+            quantitytodispense: <integer:quantity of goods to dispense> [TabStavSkladu.MnozstviKVydeji]
+        }
+    ]
 ```
 
 Possible HTTP result codes:

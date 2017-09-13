@@ -1,8 +1,8 @@
 {
 	"_type": "export",
 	"__export_format": 3,
-	"__export_date": "2017-09-02T12:06:54.543Z",
-	"__export_source": "insomnia.desktop.app:v5.7.14",
+	"__export_date": "2017-09-13T15:35:15.509Z",
+	"__export_source": "insomnia.desktop.app:v5.8.3",
 	"resources": [
 		{
 			"_id": "wrk_905933e2087744489f933b33bd6bb288",
@@ -147,7 +147,7 @@
 		{
 			"_id": "req_61e581295f1e4df99db1dcb8370087af",
 			"parentId": "fld_c1fa6b306d3c4029944ab8e362ef834f",
-			"modified": 1504353508353,
+			"modified": 1505299932812,
 			"created": 1500299012047,
 			"url": "http://helios-app.eu-central-1.elasticbeanstalk.com/web/index.php/heliosapi/clients",
 			"name": "GET:clients - HTTP 200",
@@ -161,7 +161,8 @@
 				{
 					"name": "sort",
 					"value": "idasc",
-					"id": "pair_54420de7638f4aa0acd9b810622b41cd"
+					"id": "pair_54420de7638f4aa0acd9b810622b41cd",
+					"disabled": false
 				},
 				{
 					"name": "nameisnotnull",
@@ -237,9 +238,9 @@
 		{
 			"_id": "req_d23421227b1347008da9a1d423cb612a",
 			"parentId": "fld_c1fa6b306d3c4029944ab8e362ef834f",
-			"modified": 1503929158767,
+			"modified": 1505297683796,
 			"created": 1500299409945,
-			"url": "http://helios-app.eu-central-1.elasticbeanstalk.com/web/index.php/heliosapi/clients/47",
+			"url": "http://helios-app.eu-central-1.elasticbeanstalk.com/web/index.php/heliosapi/clients/1",
 			"name": "GET:clients/<id> - HTTP 200",
 			"description": "",
 			"method": "GET",
@@ -1286,7 +1287,7 @@
 		{
 			"_id": "req_492e484a991746b6be033a4053dafa19",
 			"parentId": "fld_6e277f6590a64187be58092dad39c32f",
-			"modified": 1500378911443,
+			"modified": 1505312018572,
 			"created": 1500375971099,
 			"url": "http://localhost:8080/heliosapi/products",
 			"name": "GET:products - HTTP 200",
@@ -1306,17 +1307,51 @@
 				{
 					"name": "regnumber",
 					"value": "1",
-					"id": "pair_60e07c24c9ed4325956a23267e1d220f"
+					"id": "pair_60e07c24c9ed4325956a23267e1d220f",
+					"disabled": false
 				},
 				{
 					"name": "listfrom",
 					"value": "1",
-					"id": "pair_650b69a03ec1456386ceb45629d39d65"
+					"id": "pair_650b69a03ec1456386ceb45629d39d65",
+					"disabled": false
 				},
 				{
 					"name": "listto",
 					"value": "10",
-					"id": "pair_a60c510775f84945bbb1dbe2ded38975"
+					"id": "pair_a60c510775f84945bbb1dbe2ded38975",
+					"disabled": true
+				},
+				{
+					"name": "donotorderhidden",
+					"value": "1",
+					"id": "pair_b682f392dd1b4285ac8d13d18b09b4d6",
+					"disabled": false
+				},
+				{
+					"name": "pricefrom",
+					"value": "100",
+					"id": "pair_f85d589a2a844cf9a3ccc8de03d75787"
+				},
+				{
+					"name": "priceto",
+					"value": "200",
+					"id": "pair_d1abc59571634e28ad056da178159e60"
+				},
+				{
+					"name": "usualorigincountry",
+					"value": "C",
+					"id": "pair_57f90ea8df194ebd89ad6bf93f7e41cf"
+				},
+				{
+					"name": "goodskind",
+					"value": "4",
+					"id": "pair_85515cd3141a44aa9c9d12d841e26260"
+				},
+				{
+					"name": "goodstype",
+					"value": "3",
+					"id": "pair_f6ee420369a74c47b70adc4884b15c4e"
 				}
 			],
 			"headers": [
@@ -1342,9 +1377,9 @@
 		{
 			"_id": "req_b360ed7269844259a52c9f811494ca6e",
 			"parentId": "fld_6e277f6590a64187be58092dad39c32f",
-			"modified": 1500737356660,
+			"modified": 1505306339044,
 			"created": 1500378921187,
-			"url": "http://localhost:8080/heliosapi/products/17418",
+			"url": "http://localhost:8080/heliosapi/products/3833",
 			"name": "GET:products/<id> - HTTP 200",
 			"description": "",
 			"method": "GET",

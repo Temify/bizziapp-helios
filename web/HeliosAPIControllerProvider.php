@@ -1157,8 +1157,93 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                     $paramsOk = false;
             }
 
+            // Donotorderhidden
+            if(!empty($inputParams['donotorderhidden']))
+            {
+                if($inputParams['donotorderhidden'] == 1)
+                    $qb->andWhere('(
+                                    (TKZE._Neobjednavat IS NULL)
+                                    OR	(TKZE._Neobjednavat IS NOT NULL AND (SELECT ABS(MnozstviDispo) + ABS(MnozstviKPrijmu) + ABS(MnozstviKVydeji) FROM TabStavSkladu WHERE IDSklad = \'00100001\' AND IDKmenZbozi = TKZ.ID) > 0)
+                                    OR	(TKZE._Neobjednavat IS NOT NULL AND (SELECT ABS(MnozstviDispo) + ABS(MnozstviKPrijmu) + ABS(MnozstviKVydeji) FROM TabStavSkladu WHERE IDSklad = \'00100002\' AND IDKmenZbozi = TKZ.ID) > 0)
+                                )');
+                else
+                    $paramsOk = false;
+            }
+
+            // Pricefrom
+            if(!empty($inputParams['pricefrom']))
+            {
+                if(is_numeric($inputParams['pricefrom']))
+                {
+                    $qb->andWhere('TNC.CenaKC >= ?');
+                    $sqlParams[] = $inputParams['pricefrom'];
+                }
+                else
+                    $paramsOk = false;
+            }
+
+            // Priceto
+            if(!empty($inputParams['priceto']))
+            {
+                if(is_numeric($inputParams['priceto']))
+                {
+                    $qb->andWhere('TNC.CenaKC <= ?');
+                    $sqlParams[] = $inputParams['priceto'];
+                }
+                else
+                    $paramsOk = false;
+            }
+
+            // Usualorigincountry
+            if(!empty($inputParams['usualorigincountry']))
+            {
+                if(strlen($inputParams['usualorigincountry']) <= 2)
+                {
+                    $qb->andWhere('TKZ.ObvyklaZemePuvodu LIKE ?');
+                    $sqlParams[] = '%'.$inputParams['usualorigincountry'].'%';
+                }
+                else
+                    $paramsOk = false;
+            }
+
+            // Goodskind
+            if(!empty($inputParams['goodskind']))
+            {
+                if(is_numeric($inputParams['goodskind']))
+                {
+                    $qb->andWhere('TKZE._DruhVina = ?');
+                    $sqlParams[] = $inputParams['goodskind'];
+                }
+                else
+                    $paramsOk = false;
+            }
+
+            // Goodstype
+            if(!empty($inputParams['goodstype']))
+            {
+                if(is_numeric($inputParams['goodstype']))
+                {
+                    $qb->andWhere('TKZE._TypVina = ?');
+                    $sqlParams[] = $inputParams['goodstype'];
+                }
+                else
+                    $paramsOk = false;
+            }
+
             if($paramsOk === false)
                 $app->abort(400, "Bad Request.");
+
+            // External values
+            $qb->leftJoin('TKZ', 'TabKmenZbozi_EXT', 'TKZE', 'TKZ.ID = TKZE.ID');
+
+            // Prices
+            if(!empty($inputParams['pricelevel']))
+            if(is_numeric($inputParams['pricelevel']))
+                $qb->leftJoin('TKZ', 'TabNC', 'TNC', 'TKZ.ID = TNC.IDKmenZbozi AND TNC.CenovaUroven = '.$inputParams['pricelevel']);
+            else 
+                $paramsOk = false;
+            else
+                $qb->leftJoin('TKZ', 'TabNC', 'TNC', 'TKZ.ID = TNC.IDKmenZbozi AND TNC.CenovaUroven = 1');
 
             // Get total rows count
             $qb->select('COUNT(TKZ.ID) AS totalcount');
@@ -1179,17 +1264,15 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                         'TKZ.SazbaDPHVystup',
                         'TNC.CenaKC',
                         'TKZ.SKP',
-                        'TKZ.Blokovano'
+                        'TKZ.Blokovano',
+                        '(SELECT CONCAT(MnozstviDispo, \'/\', MnozstviKPrijmu, \'/\', MnozstviKVydeji) FROM TabStavSkladu WHERE IDSklad = \'00100001\' AND IDKmenZbozi = TKZ.ID) AS \'BeznySklad\'',
+                        '(SELECT CONCAT(MnozstviDispo, \'/\', MnozstviKPrijmu, \'/\', MnozstviKVydeji) FROM TabStavSkladu WHERE IDSklad = \'00100002\' AND IDKmenZbozi = TKZ.ID) AS \'DanovySklad\'',
+                        'TKZE._Neobjednavat',
+                        'TKZE._DruhVina',
+                        'TKZE._IVK',
+                        'TKZ.ObvyklaZemePuvodu',
+                        'TKZE._TypVina'
                         );
-
-            // Prices
-            if(!empty($inputParams['pricelevel']))
-                if(is_numeric($inputParams['pricelevel']))
-                    $qb->leftJoin('TKZ', 'TabNC', 'TNC', 'TKZ.ID = TNC.IDKmenZbozi AND TNC.CenovaUroven = '.$inputParams['pricelevel']);
-                else 
-                    $paramsOk = false;
-            else
-                $qb->leftJoin('TKZ', 'TabNC', 'TNC', 'TKZ.ID = TNC.IDKmenZbozi AND TNC.CenovaUroven = 1');
 
             // Limit from
             if(!empty($inputParams['listfrom']))
@@ -1255,6 +1338,31 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 else
                     $newRow->vintage = null;
                 $newRow->blocked = (int)$row['Blokovano'];
+
+                $tmpBeznySklad = (!empty($row['BeznySklad']))?explode('/', $row['BeznySklad']):['','',''];
+                $tmpDanovySklad = (!empty($row['DanovySklad']))?explode('/', $row['DanovySklad']):['','',''];
+
+                $newRow->storages[] = [
+                    'storageid' => (int)3,
+                    'quantityavailable' => $tmpBeznySklad[0],
+                    'quantitytoreceive' => $tmpBeznySklad[1],
+                    'quantitytodispense' => $tmpBeznySklad[2]
+                ];
+
+                $newRow->storages[] = [
+                    'storageid' => (int)6,
+                    'quantityavailable' => $tmpDanovySklad[0],
+                    'quantitytoreceive' => $tmpDanovySklad[1],
+                    'quantitytodispense' => $tmpDanovySklad[2]
+                ];
+
+                $newRow->donotorder = (int)$row['_Neobjednavat'];
+                $newRow->goodskind = (int)$row['_DruhVina'];
+                $newRow->ivk = (int)$row['_IVK'];
+                $newRow->usualorigincountry = $row['ObvyklaZemePuvodu'];
+                $newRow->goodstype = (int)$row['_TypVina'];
+
+
                 $result->rows[] = $newRow;
             }
 
@@ -1308,11 +1416,21 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                         'TKZ.KodSD',
                         'TKZ.PrepocetMJSD',
                         'TKZ.Blokovano',
-                        'TNC.CenaKC'
+                        'TNC.CenaKC',
+                        '(SELECT CONCAT(MnozstviDispo, \'/\', MnozstviKPrijmu, \'/\', MnozstviKVydeji) FROM TabStavSkladu WHERE IDSklad = \'00100001\' AND IDKmenZbozi = TKZ.ID) AS \'BeznySklad\'',
+                        '(SELECT CONCAT(MnozstviDispo, \'/\', MnozstviKPrijmu, \'/\', MnozstviKVydeji) FROM TabStavSkladu WHERE IDSklad = \'00100002\' AND IDKmenZbozi = TKZ.ID) AS \'DanovySklad\'',
+                        'TKZE._Neobjednavat',
+                        'TKZE._DruhVina',
+                        'TKZE._IVK',
+                        'TKZ.ObvyklaZemePuvodu',
+                        'TKZE._TypVina'
                         );
 
             // Prices
             $qb->leftJoin('TKZ', 'TabNC', 'TNC', 'TKZ.ID = TNC.IDKmenZbozi AND TNC.CenovaUroven = 1');
+            
+            // External values
+            $qb->leftJoin('TKZ', 'TabKmenZbozi_EXT', 'TKZE', 'TKZ.ID = TKZE.ID');
 
             $app['db']->prepare($qb->getSql());
             if($app['debug']) $app['monolog']->info('DB Select product detail :'.$qb->getSql());
@@ -1328,7 +1446,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->group = $row['SkupZbo'];
                 $newRow->regnum = $row['RegCis'];
                 $newRow->storagetype = $row['DruhSkladu'];
-                $newRow->name = $row['Nazev1'];
+                $newRow->name1 = $row['Nazev1'];
                 $newRow->name2 = $row['Nazev2'];
                 $newRow->name3 = $row['Nazev3'];
                 $newRow->name4 = $row['Nazev4'];
@@ -1354,7 +1472,30 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->mued = $row['MJSD'];
                 $newRow->edcode = $row['KodSD'];
                 $newRow->edcalc = $row['PrepocetMJSD'];
-                $newRow->blocked = (int)$row['Blokovano'];
+                $newRow->blocked = (int)$row['Blokovano'];                
+                $tmpBeznySklad = (!empty($row['BeznySklad']))?explode('/', $row['BeznySklad']):['','',''];
+                $tmpDanovySklad = (!empty($row['DanovySklad']))?explode('/', $row['DanovySklad']):['','',''];
+
+                $newRow->storages[] = [
+                    'storageid' => (int)3,
+                    'quantityavailable' => $tmpBeznySklad[0],
+                    'quantitytoreceive' => $tmpBeznySklad[1],
+                    'quantitytodispense' => $tmpBeznySklad[2]
+                ];
+
+                $newRow->storages[] = [
+                    'storageid' => (int)6,
+                    'quantityavailable' => $tmpDanovySklad[0],
+                    'quantitytoreceive' => $tmpDanovySklad[1],
+                    'quantitytodispense' => $tmpDanovySklad[2]
+                ];
+
+                $newRow->donotorder = (int)$row['_Neobjednavat'];
+                $newRow->goodskind = (int)$row['_DruhVina'];
+                $newRow->ivk = (int)$row['_IVK'];
+                $newRow->usualorigincountry = $row['ObvyklaZemePuvodu'];
+                $newRow->goodstype = (int)$row['_TypVina'];
+                
                 $result = $newRow;
             }
 
