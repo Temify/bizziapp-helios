@@ -206,9 +206,9 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->responsibleperson->country = $row['AdrTrvZeme'];
                 
                 $contactReferences[(int)$row['ID']] = ['email' => [], 'phone' => [], 'website' => []];
-                $newRow->email[] = &$contactReferences[(int)$row['ID']]['email'];
-                $newRow->phone[] = &$contactReferences[(int)$row['ID']]['phone'];
-                $newRow->website[] = &$contactReferences[(int)$row['ID']]['website'];
+                $newRow->email = &$contactReferences[(int)$row['ID']]['email'];
+                $newRow->phone = &$contactReferences[(int)$row['ID']]['phone'];
+                $newRow->website = &$contactReferences[(int)$row['ID']]['website'];
                 
                 $result->rows[] = $newRow;
             }
