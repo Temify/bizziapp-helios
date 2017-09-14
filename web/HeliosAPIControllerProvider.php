@@ -1536,14 +1536,16 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $inputParams['regnum'] != null && strlen($inputParams['regnum']) <= 30 &&
                 $inputParams['name'] != null && strlen($inputParams['name']) <= 100 &&
                 $inputParams['storagetype'] != null && is_numeric($inputParams['storagetype']) &&
-                ($inputParams['blocked'] != null || $inputParams['blocked'] == 0) && is_numeric($inputParams['blocked'])
+                ($inputParams['blocked'] != null || $inputParams['blocked'] == 0) && is_numeric($inputParams['blocked']) &&
+                $inputParams['price'] != null && is_numeric($inputParams['price'])
                 )
             {
-                $sqlParams['SkupZbo'] = $inputParams['group'];
-                $sqlParams['RegCis'] = $inputParams['regnum'];
-                $sqlParams['Nazev1'] = $inputParams['name'];
-                $sqlParams['DruhSkladu'] = $inputParams['storagetype'];
-                $sqlParams['Blokovano'] = $inputParams['blocked'];
+                $sqlParams['TabKmenZbozi']['SkupZbo'] = $inputParams['group'];
+                $sqlParams['TabKmenZbozi']['RegCis'] = $inputParams['regnum'];
+                $sqlParams['TabKmenZbozi']['Nazev1'] = $inputParams['name'];
+                $sqlParams['TabKmenZbozi']['DruhSkladu'] = $inputParams['storagetype'];
+                $sqlParams['TabKmenZbozi']['Blokovano'] = $inputParams['blocked'];
+                $sqlParams['TabNC']['CenaKc'] = $inputParams['price'];
             }
             else
                 $app->abort(400, "Bad Request.");
@@ -1551,127 +1553,170 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             // Optional fields
             if($inputParams['name2'] != null)
                 if(strlen($inputParams['name2']) <= 100)
-                    $sqlParams['Nazev2'] = $inputParams['name2'];
+                    $sqlParams['TabKmenZbozi']['Nazev2'] = $inputParams['name2'];
                 else
                     $paramsOk = false;
 
             if($inputParams['name3'] != null)
                 if(strlen($inputParams['name3']) <= 100)
-                    $sqlParams['Nazev3'] = $inputParams['name3'];
+                    $sqlParams['TabKmenZbozi']['Nazev3'] = $inputParams['name3'];
                 else
                     $paramsOk = false;
 
             if($inputParams['name4'] != null)
                 if(strlen($inputParams['name4']) <= 100)
-                    $sqlParams['Nazev4'] = $inputParams['name4'];
+                    $sqlParams['TabKmenZbozi']['Nazev4'] = $inputParams['name4'];
                 else
                     $paramsOk = false;
 
             if($inputParams['skp'] != null)
                 if(strlen($inputParams['skp']) <= 50)
-                    $sqlParams['SKP'] = $inputParams['skp'];
+                    $sqlParams['TabKmenZbozi']['SKP'] = $inputParams['skp'];
                 else
                     $paramsOk = false;
 
             if($inputParams['range'] != null)
                 if(is_numeric($inputParams['range']))
-                    $sqlParams['IdSortiment'] = $inputParams['range'];
+                    $sqlParams['TabKmenZbozi']['IdSortiment'] = $inputParams['range'];
                 else
                     $paramsOk = false;
 
             if($inputParams['notice'] != null)
                 if(strlen($inputParams['notice']) <= 255)
-                    $sqlParams['Upozorneni'] = $inputParams['notice'];
+                    $sqlParams['TabKmenZbozi']['Upozorneni'] = $inputParams['notice'];
                 else
                     $paramsOk = false;
 
             if($inputParams['note'] != null)
                 if(strlen($inputParams['note']) <= 1073741823)
-                    $sqlParams['Poznamka'] = $inputParams['note'];
+                    $sqlParams['TabKmenZbozi']['Poznamka'] = $inputParams['note'];
                 else
                     $paramsOk = false;
 
             if($inputParams['muevidence'] != null)
                 if(strlen($inputParams['muevidence']) <= 10)
-                    $sqlParams['MJEvidence'] = $inputParams['muevidence'];
+                    $sqlParams['TabKmenZbozi']['MJEvidence'] = $inputParams['muevidence'];
                 else
                     $paramsOk = false;
 
             if($inputParams['mustocktaking'] != null)
                 if(strlen($inputParams['mustocktaking']) <= 10)
-                    $sqlParams['MJInventura'] = $inputParams['mustocktaking'];
+                    $sqlParams['TabKmenZbozi']['MJInventura'] = $inputParams['mustocktaking'];
                 else
                     $paramsOk = false;
 
             if($inputParams['muinput'] != null)
                 if(strlen($inputParams['muinput']) <= 10)
-                    $sqlParams['MJVstup'] = $inputParams['muinput'];
+                    $sqlParams['TabKmenZbozi']['MJVstup'] = $inputParams['muinput'];
                 else
                     $paramsOk = false;
 
             if($inputParams['muoutput'] != null)
                 if(strlen($inputParams['muoutput']) <= 10)
-                    $sqlParams['MJVystup'] = $inputParams['muoutput'];
+                    $sqlParams['TabKmenZbozi']['MJVystup'] = $inputParams['muoutput'];
                 else
                     $paramsOk = false;
 
             if($inputParams['vatinput'] != null)
                 if(is_numeric($inputParams['vatinput']))
-                    $sqlParams['SazbaDPHVstup'] = $inputParams['vatinput'];
+                    $sqlParams['TabKmenZbozi']['SazbaDPHVstup'] = $inputParams['vatinput'];
                 else
                     $paramsOk = false;
 
             if($inputParams['vatoutput'] != null)
                 if(is_numeric($inputParams['vatoutput']))
-                    $sqlParams['SazbaDPHVystup'] = $inputParams['vatoutput'];
+                    $sqlParams['TabKmenZbozi']['SazbaDPHVystup'] = $inputParams['vatoutput'];
                 else
                     $paramsOk = false;
 
             if($inputParams['pdpcode'] != null)
                 if(is_numeric($inputParams['pdpcode']))
-                    $sqlParams['IDKodPDP'] = $inputParams['pdpcode'];
+                    $sqlParams['TabKmenZbozi']['IDKodPDP'] = $inputParams['pdpcode'];
                 else
                     $paramsOk = false;
 
             if($inputParams['edinput'] != null)
                 if(is_numeric($inputParams['edinput']))
-                    $sqlParams['SazbaSDVstup'] = $inputParams['edinput'];
+                    $sqlParams['TabKmenZbozi']['SazbaSDVstup'] = $inputParams['edinput'];
                 else
                     $paramsOk = false;
 
             if($inputParams['edoutput'] != null)
                 if(is_numeric($inputParams['edoutput']))
-                    $sqlParams['SazbaSDVystup'] = $inputParams['edoutput'];
+                    $sqlParams['TabKmenZbozi']['SazbaSDVystup'] = $inputParams['edoutput'];
                 else
                     $paramsOk = false;
 
             if($inputParams['mued'] != null)
                 if(strlen($inputParams['mued']) <= 10)
-                    $sqlParams['MJSD'] = $inputParams['mued'];
+                    $sqlParams['TabKmenZbozi']['MJSD'] = $inputParams['mued'];
                 else
                     $paramsOk = false;
 
             if($inputParams['edcode'] != null)
                 if(strlen($inputParams['edcode']) <= 10)
-                    $sqlParams['KodSD'] = $inputParams['edcode'];
+                    $sqlParams['TabKmenZbozi']['KodSD'] = $inputParams['edcode'];
                 else
                     $paramsOk = false;
 
             if($inputParams['edcalc'] != null)
                 if(is_numeric($inputParams['edcalc']))
-                    $sqlParams['PrepocetMJSD'] = $inputParams['edcalc'];
+                    $sqlParams['TabKmenZbozi']['PrepocetMJSD'] = $inputParams['edcalc'];
                 else
                     $paramsOk = false;
             
+            if($inputParams['usualorigincountry'] != null)
+                if(strlen($inputParams['usualorigincountry']) <= 2)
+                    $sqlParams['TabKmenZbozi']['ObvyklaZemePuvodu'] = $inputParams['usualorigincountry'];
+                else
+                    $paramsOk = false;
+            
+            if($inputParams['donotorder'] != null)
+                if(is_numeric($inputParams['donotorder']))
+                    $sqlParams['TabKmenZbozi_EXT']['_Neobjednavat'] = $inputParams['donotorder'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['goodskind'] != null)
+                if(is_numeric($inputParams['goodskind']))
+                    $sqlParams['TabKmenZbozi_EXT']['_DruhVina'] = $inputParams['goodskind'];
+                else
+                    $paramsOk = false;
+                
+            if($inputParams['goodstype'] != null)
+                if(is_numeric($inputParams['goodstype']))
+                    $sqlParams['TabKmenZbozi_EXT']['_TypVina'] = $inputParams['goodstype'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['ivk'] != null)
+                if(is_numeric($inputParams['ivk']))
+                    $sqlParams['TabKmenZbozi_EXT']['_IVK'] = $inputParams['ivk'];
+                else
+                    $paramsOk = false;
+
             if($paramsOk === false)
                 $app->abort(400, "Bad Request.");
 
             $app['db']->beginTransaction();
-            $result = $app['db']->insert('TabKmenZbozi', $sqlParams); 
-            $newProductId = $app['db']->lastInsertId();
+            if($app['debug']) $app['monolog']->info('POST PRODUCT:TabKmenZbozi');
+            $result['TabKmenZbozi'] = $app['db']->insert('TabKmenZbozi', $sqlParams['TabKmenZbozi']); 
+            $lastInsertedId['TabKmenZbozi'] = $app['db']->lastInsertId();
 
-            // If exactly 1 row was affected            
-            if($result === 1)
+            if(count($sqlParams['TabKmenZbozi_EXT']) > 0)
+            {
+                if($app['debug']) $app['monolog']->info('POST PRODUCT:TabKmenZbozi_EXT');
+                $result['TabKmenZbozi_EXT'] = $app['db']->update('TabKmenZbozi_EXT', $sqlParams['TabKmenZbozi_EXT'], array('ID' => $lastInsertedId['TabKmenZbozi']));
+            }
+
+            if($app['debug']) $app['monolog']->info('POST PRODUCT:IDKmenZbozi');
+            $sqlParams['TabNC']['IDKmenZbozi'] = $lastInsertedId['TabKmenZbozi'];
+            $sqlParams['TabNC']['CenovaUroven'] = 1;
+            $result['TabNC'] = $app['db']->insert('TabNC', $sqlParams['TabNC']);
+            $lastInsertedId['TabNC'] = $app['db']->lastInsertId();
+
+            // If exactly 1 row was affected
+            if(count($result) === array_sum($result))
                 $app['db']->commit();
             else
             {
@@ -1679,8 +1724,8 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $app->abort(500, "Internal Server Error.");
             }
 
-            $response =  new Response(json_encode(array('id' => (int)$newProductId)), 201);
-            $response->headers->set('Location', 'products/'.$newProductId);
+            $response =  new Response(json_encode(array('id' => (int)$lastInsertedId['TabKmenZbozi'])), 201);
+            $response->headers->set('Location', 'products/'.$lastInsertedId['TabKmenZbozi']);
             return $response;
         });
 
@@ -1718,157 +1763,208 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             // Optional fields
             if($inputParams['group'] != null)
                 if(strlen($inputParams['group']) <= 3)
-                    $sqlParams['SkupZbo'] = $inputParams['group'];
+                    $sqlParams['TabKmenZbozi']['SkupZbo'] = $inputParams['group'];
                 else
                     $paramsOk = false;
              
             if($inputParams['regnum'] != null)
                 if(strlen($inputParams['regnum']) <= 30)
-                    $sqlParams['RegCis'] = $inputParams['regnum'];
+                    $sqlParams['TabKmenZbozi']['RegCis'] = $inputParams['regnum'];
                 else
                     $paramsOk = false;
 
             if($inputParams['name'] != null)
                 if(strlen($inputParams['name']) <= 100)
-                    $sqlParams['Nazev1'] = $inputParams['name'];
+                    $sqlParams['TabKmenZbozi']['Nazev1'] = $inputParams['name'];
                 else
                     $paramsOk = false;
 
             if($inputParams['storagetype'] != null)
                 if(is_numeric($inputParams['storagetype']))
-                    $sqlParams['DruhSkladu'] = $inputParams['storagetype'];
+                    $sqlParams['TabKmenZbozi']['DruhSkladu'] = $inputParams['storagetype'];
                 else
                     $paramsOk = false;
 
             if($inputParams['name2'] != null)
                 if(strlen($inputParams['name2']) <= 100)
-                    $sqlParams['Nazev2'] = $inputParams['name2'];
+                    $sqlParams['TabKmenZbozi']['Nazev2'] = $inputParams['name2'];
                 else
                     $paramsOk = false;
 
             if($inputParams['name3'] != null)
                 if(strlen($inputParams['name3']) <= 100)
-                    $sqlParams['Nazev3'] = $inputParams['name3'];
+                    $sqlParams['TabKmenZbozi']['Nazev3'] = $inputParams['name3'];
                 else
                     $paramsOk = false;
 
             if($inputParams['name4'] != null)
                 if(strlen($inputParams['name4']) <= 100)
-                    $sqlParams['Nazev4'] = $inputParams['name4'];
+                    $sqlParams['TabKmenZbozi']['Nazev4'] = $inputParams['name4'];
                 else
                     $paramsOk = false;
 
             if($inputParams['skp'] != null)
                 if(strlen($inputParams['skp']) <= 50)
-                    $sqlParams['SKP'] = $inputParams['skp'];
+                    $sqlParams['TabKmenZbozi']['SKP'] = $inputParams['skp'];
                 else
                     $paramsOk = false;
 
             if($inputParams['range'] != null)
                 if(is_numeric($inputParams['range']))
-                    $sqlParams['IdSortiment'] = $inputParams['range'];
+                    $sqlParams['TabKmenZbozi']['IdSortiment'] = $inputParams['range'];
                 else
                     $paramsOk = false;
 
             if($inputParams['notice'] != null)
                 if(strlen($inputParams['notice']) <= 255)
-                    $sqlParams['Upozorneni'] = $inputParams['notice'];
+                    $sqlParams['TabKmenZbozi']['Upozorneni'] = $inputParams['notice'];
                 else
                     $paramsOk = false;
 
             if($inputParams['note'] != null)
                 if(strlen($inputParams['note']) <= 1073741823)
-                    $sqlParams['Poznamka'] = $inputParams['note'];
+                    $sqlParams['TabKmenZbozi']['Poznamka'] = $inputParams['note'];
                 else
                     $paramsOk = false;
 
             if($inputParams['muevidence'] != null)
                 if(strlen($inputParams['muevidence']) <= 10)
-                    $sqlParams['MJEvidence'] = $inputParams['muevidence'];
+                    $sqlParams['TabKmenZbozi']['MJEvidence'] = $inputParams['muevidence'];
                 else
                     $paramsOk = false;
 
             if($inputParams['mustocktaking'] != null)
                 if(strlen($inputParams['mustocktaking']) <= 10)
-                    $sqlParams['MJInventura'] = $inputParams['mustocktaking'];
+                    $sqlParams['TabKmenZbozi']['MJInventura'] = $inputParams['mustocktaking'];
                 else
                     $paramsOk = false;
 
             if($inputParams['muinput'] != null)
                 if(strlen($inputParams['muinput']) <= 10)
-                    $sqlParams['MJVstup'] = $inputParams['muinput'];
+                    $sqlParams['TabKmenZbozi']['MJVstup'] = $inputParams['muinput'];
                 else
                     $paramsOk = false;
 
             if($inputParams['muoutput'] != null)
                 if(strlen($inputParams['muoutput']) <= 10)
-                    $sqlParams['MJVystup'] = $inputParams['muoutput'];
+                    $sqlParams['TabKmenZbozi']['MJVystup'] = $inputParams['muoutput'];
                 else
                     $paramsOk = false;
 
             if($inputParams['vatinput'] != null)
                 if(is_numeric($inputParams['vatinput']))
-                    $sqlParams['SazbaDPHVstup'] = $inputParams['vatinput'];
+                    $sqlParams['TabKmenZbozi']['SazbaDPHVstup'] = $inputParams['vatinput'];
                 else
                     $paramsOk = false;
 
             if($inputParams['vatoutput'] != null)
                 if(is_numeric($inputParams['vatoutput']))
-                    $sqlParams['SazbaDPHVystup'] = $inputParams['vatoutput'];
+                    $sqlParams['TabKmenZbozi']['SazbaDPHVystup'] = $inputParams['vatoutput'];
                 else
                     $paramsOk = false;
 
             if($inputParams['pdpcode'] != null)
                 if(is_numeric($inputParams['pdpcode']))
-                    $sqlParams['IDKodPDP'] = $inputParams['pdpcode'];
+                    $sqlParams['TabKmenZbozi']['IDKodPDP'] = $inputParams['pdpcode'];
                 else
                     $paramsOk = false;
 
             if($inputParams['edinput'] != null)
                 if(is_numeric($inputParams['edinput']))
-                    $sqlParams['SazbaSDVstup'] = $inputParams['edinput'];
+                    $sqlParams['TabKmenZbozi']['SazbaSDVstup'] = $inputParams['edinput'];
                 else
                     $paramsOk = false;
 
             if($inputParams['edoutput'] != null)
                 if(is_numeric($inputParams['edoutput']))
-                    $sqlParams['SazbaSDVystup'] = $inputParams['edoutput'];
+                    $sqlParams['TabKmenZbozi']['SazbaSDVystup'] = $inputParams['edoutput'];
                 else
                     $paramsOk = false;
 
             if($inputParams['mued'] != null)
                 if(strlen($inputParams['mued']) <= 10)
-                    $sqlParams['MJSD'] = $inputParams['mued'];
+                    $sqlParams['TabKmenZbozi']['MJSD'] = $inputParams['mued'];
                 else
                     $paramsOk = false;
 
             if($inputParams['edcode'] != null)
                 if(strlen($inputParams['edcode']) <= 10)
-                    $sqlParams['KodSD'] = $inputParams['edcode'];
+                    $sqlParams['TabKmenZbozi']['KodSD'] = $inputParams['edcode'];
                 else
                     $paramsOk = false;
 
             if($inputParams['edcalc'] != null)
                 if(is_numeric($inputParams['edcalc']))
-                    $sqlParams['PrepocetMJSD'] = $inputParams['edcalc'];
+                    $sqlParams['TabKmenZbozi']['PrepocetMJSD'] = $inputParams['edcalc'];
                 else
                     $paramsOk = false;
 
-            if(($inputParams['blocked'] != null || $inputParams['blocked'] == 0))
+            if(($inputParams['blocked'] != null || $inputParams['blocked'] == '0'))
                 if(is_numeric($inputParams['blocked']))
-                    $sqlParams['Blokovano'] = $inputParams['blocked'];
+                    $sqlParams['TabKmenZbozi']['Blokovano'] = $inputParams['blocked'];
+                else
+                    $paramsOk = false;
+
+            if(($inputParams['price'] != null || $inputParams['price'] == '0'))
+                if(is_numeric($inputParams['price']))
+                    $sqlParams['TabNC']['CenaKc'] = $inputParams['price'];
+                else
+                    $paramsOk = false;
+
+            if(($inputParams['donotorder'] != null || $inputParams['donotorder'] == '0'))
+                if(is_numeric($inputParams['donotorder']))
+                    $sqlParams['TabKmenZbozi_EXT']['_Neobjednavat'] = $inputParams['donotorder'];
+                else
+                    $paramsOk = false;
+
+            if(isset($inputParams['goodskind']))
+                if(is_numeric($inputParams['goodskind']))
+                    $sqlParams['TabKmenZbozi_EXT']['_DruhVina'] = $inputParams['goodskind'];
+                else
+                    $paramsOk = false;
+
+            if(isset($inputParams['ivk']))
+                if(is_numeric($inputParams['ivk']))
+                    $sqlParams['TabKmenZbozi_EXT']['_IVK'] = $inputParams['ivk'];
+                else
+                    $paramsOk = false;
+
+            if($inputParams['usualorigincountry'] != null)
+                if(strlen($inputParams['usualorigincountry']) <= 2)
+                    $sqlParams['TabKmenZbozi']['ObvyklaZemePuvodu'] = $inputParams['usualorigincountry'];
+                else
+                    $paramsOk = false;
+
+            if(isset($inputParams['goodstype']))
+                if(is_numeric($inputParams['goodstype']))
+                    $sqlParams['TabKmenZbozi_EXT']['_TypVina'] = $inputParams['goodstype'];
                 else
                     $paramsOk = false;
 
             // No input data received or bad format data
+            if($app['debug']) $app['monolog']->info('PUT PRODUCT params['.count($sqlParams).']['.$paramsOk.']:'.print_r($sqlParams, true));
             if(count($sqlParams) < 1 || $paramsOk === false)
                 $app->abort(400, "Bad Request.");
 
             $app['db']->beginTransaction();
-            $result = $app['db']->update('TabKmenZbozi', $sqlParams, array('ID' => $id));
 
-            // If exactly 1 row was affected            
-            if($result === 1)
+            if($app['debug']) $app['monolog']->info('PUT PRODUCT:TabKmenZbozi');
+            $result['TabKmenZbozi'] = $app['db']->update('TabKmenZbozi', $sqlParams['TabKmenZbozi'], array('ID' => $id));
+
+            if(count($sqlParams['TabKmenZbozi_EXT']) > 0)
+            {
+                if($app['debug']) $app['monolog']->info('POST PRODUCT:TabKmenZbozi_EXT');
+                $result['TabKmenZbozi_EXT'] = $app['db']->update('TabKmenZbozi_EXT', $sqlParams['TabKmenZbozi_EXT'], array('ID' => $id));
+            }
+
+            if(count($sqlParams['TabNC']) > 0)
+            {
+                if($app['debug']) $app['monolog']->info('POST PRODUCT:IDKmenZbozi');
+                $result['TabNC'] = $app['db']->update('TabNC', $sqlParams['TabNC'], array('IDKmenZbozi' => $id, 'CenovaUroven' => 1));
+            }
+
+            // If exactly 1 row was affected
+            if(count($result) === array_sum($result))
                 $app['db']->commit();
             else
             {

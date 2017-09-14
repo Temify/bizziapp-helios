@@ -456,8 +456,8 @@ Output JSON object:
     muoutput: <string:measurement unit of output> [TabKmenZbozi.MJVystup],
     vatinput: <float:vat input> [TabKmenZbozi.SazbaDPHVstup],
     vatoutput: <float:vat output> [TabKmenZbozi.SazbaDPHVystup],
-    price: <float:price without VAT> [TabNC.CenaKC],
-    pricevat: <float:price with VAT> [TabNC.CenaKC * (1 + (0,01 * TabKmenZbozi.SazbaDPHVystup))],
+    price: <float:price without VAT - pricelevel = 1> [TabNC.CenaKC],
+    pricevat: <float:price with VAT - pricelevel = 1> [TabNC.CenaKC * (1 + (0,01 * TabKmenZbozi.SazbaDPHVystup))],
     pdpcode: <integer:PDP code> [TabKmenZbozi.IDKodPDP],
     edinput: <float:excise duty input> [TabKmenZbozi.SazbaSDVstup],
     edoutput: <flost:excise duty output> [TabKmenZbozi.SazbaSDVystup],
@@ -527,7 +527,13 @@ POST JSON object:
     mued: {optional} <string length 1-10:measurement unit of excise duty> [TabKmenZbozi.MJSD],
     edcode: {optional} <string length 1-10:excise duty code> [TabKmenZbozi.KodSD],
     edcalc: {optional} <float:excise duty calculation> [TabKmenZbozi.PrepocetMJSD],
-    blocked: {optional} <integer:product is active or archived> (0 = active, 1 = archived - default 0) [TabKmenZbozi.Blokovano]
+    blocked: {optional} <integer:product is active or archived> (0 = active, 1 = archived - default 0) [TabKmenZbozi.Blokovano],
+    price: <float:price for pricelevel 1> [TabNC.CenaKc],
+    donotorder: {optional} <integer:do not orged this produc anymore> (0 = order, 1 = do not order) [TabKmenZbozi_EXT._Neobjednavat],
+    goodskind: {optional} <integer:typ o goods> (NULL = not inserted, 1 = common, 2 = allocation, 3 = rarity, 4 = clearance sale, 5 = archive, 6 = POS material) [TabKmenZbozi_EXT._DruhVina],
+    ivk: {optional} <integer:wine accessories> (NULL/0 = wine, 1 = accessories) [TabKmenZbozi_EXT._IVK]
+    usualorigincountry: {optional} <string length 1-2:usual country of origin> [TabKmenZbozi.ObvyklaZemePuvodu],
+    goodstype: {optional} <integer:typ o wine> (NULL = not inserted, 1 = white, 2 = rose, 3 = red, 4 = champagne, 5 = sparkling) [TabKmenZbozi_EXT._TypVina]
 }
 ```
 
@@ -595,7 +601,13 @@ PUT JSON object:
     mued: {optional} <string length 1-10:measurement unit of excise duty> [TabKmenZbozi.MJSD],
     edcode: {optional} <string length 1-10:excise duty code> [TabKmenZbozi.KodSD],
     edcalc: {optional} <float:excise duty calculation> [TabKmenZbozi.PrepocetMJSD],
-    blocked: {optional} <integer:product is active or archived> (0 = active, 1 = archived) [TabKmenZbozi.Blokovano]
+    blocked: {optional} <integer:product is active or archived> (0 = active, 1 = archived) [TabKmenZbozi.Blokovano],
+    price: {optional} <float:price for pricelevel 1> [TabNC.CenaKc],
+    donotorder: {optional} <integer:do not orged this produc anymore> (0 = order, 1 = do not order) [TabKmenZbozi_EXT._Neobjednavat],
+    goodskind: {optional} <integer:typ o goods> (NULL = not inserted, 1 = common, 2 = allocation, 3 = rarity, 4 = clearance sale, 5 = archive, 6 = POS material) [TabKmenZbozi_EXT._DruhVina],
+    ivk: {optional} <integer:wine accessories> (NULL/0 = wine, 1 = accessories) [TabKmenZbozi_EXT._IVK]
+    usualorigincountry: {optional} <string length 1-2:usual country of origin> [TabKmenZbozi.ObvyklaZemePuvodu],
+    goodstype: {optional} <integer:typ o wine> (NULL = not inserted, 1 = white, 2 = rose, 3 = red, 4 = champagne, 5 = sparkling) [TabKmenZbozi_EXT._TypVina]
 }
 ```
 
