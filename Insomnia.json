@@ -1,7 +1,7 @@
 {
 	"_type": "export",
 	"__export_format": 3,
-	"__export_date": "2017-09-13T15:35:15.509Z",
+	"__export_date": "2017-09-14T15:58:30.487Z",
 	"__export_source": "insomnia.desktop.app:v5.8.3",
 	"resources": [
 		{
@@ -384,7 +384,7 @@
 		{
 			"_id": "req_3c3b1d9f50fa4f7f9415618a6b5b9ce2",
 			"parentId": "fld_5b9108e77be847948ad93b7152761e27",
-			"modified": 1500380455773,
+			"modified": 1505317090038,
 			"created": 1500380431210,
 			"url": "http://helios-app.eu-central-1.elasticbeanstalk.com/web/index.php/heliosapi/products",
 			"name": "GET:products - HTTP 200",
@@ -408,13 +408,35 @@
 				},
 				{
 					"name": "listfrom",
-					"value": "1",
-					"id": "pair_650b69a03ec1456386ceb45629d39d65"
+					"value": "0",
+					"id": "pair_650b69a03ec1456386ceb45629d39d65",
+					"disabled": false
 				},
 				{
 					"name": "listto",
 					"value": "10",
-					"id": "pair_a60c510775f84945bbb1dbe2ded38975"
+					"id": "pair_a60c510775f84945bbb1dbe2ded38975",
+					"disabled": false
+				},
+				{
+					"name": "pricefrom",
+					"value": "100",
+					"id": "pair_192d7c06156e45cda3c30a9c3a0a7ddb"
+				},
+				{
+					"name": "priceto",
+					"value": "200",
+					"id": "pair_b251074af25946d4994a4bf015ec0357"
+				},
+				{
+					"name": "goodskind",
+					"value": "6",
+					"id": "pair_0d0b19404da545f28b4a2a627a12e461"
+				},
+				{
+					"name": "goodstype",
+					"value": "3",
+					"id": "pair_c8e4cbd1e827458cb42175b92defa0d6"
 				}
 			],
 			"headers": [
@@ -440,9 +462,9 @@
 		{
 			"_id": "req_20ce831aede748f18189ea1e49a248bb",
 			"parentId": "fld_5b9108e77be847948ad93b7152761e27",
-			"modified": 1500738303599,
+			"modified": 1505404684327,
 			"created": 1500380432655,
-			"url": "http://helios-app.eu-central-1.elasticbeanstalk.com/web/index.php/heliosapi/products/17418",
+			"url": "http://helios-app.eu-central-1.elasticbeanstalk.com/web/index.php/heliosapi/products/20795",
 			"name": "GET:products/<id> - HTTP 200",
 			"description": "",
 			"method": "GET",
@@ -474,7 +496,7 @@
 		{
 			"_id": "req_4425d4f256a747df82da9117504b2153",
 			"parentId": "fld_5b9108e77be847948ad93b7152761e27",
-			"modified": 1500738234478,
+			"modified": 1505404654446,
 			"created": 1500738062655,
 			"url": "http://helios-app.eu-central-1.elasticbeanstalk.com/web/index.php/heliosapi/products",
 			"name": "POST:products - HTTP 201",
@@ -482,7 +504,7 @@
 			"method": "POST",
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n\t\t\"group\": \"345\",\n    \"regnum\": \"TEST7\",\n    \"name\": \"TestName\"\n}"
+				"text": "{\n\t\t\"group\": \"345\",\n    \"regnum\": \"TESTproduct1\",\n    \"name\": \"TestName\",\n\t\t\"price\": 100\n}"
 			},
 			"parameters": [],
 			"headers": [
@@ -552,15 +574,15 @@
 		{
 			"_id": "req_86759434975848e4a1a6138d03776f54",
 			"parentId": "fld_5b9108e77be847948ad93b7152761e27",
-			"modified": 1500738212434,
+			"modified": 1505404679137,
 			"created": 1500738070179,
-			"url": "http://helios-app.eu-central-1.elasticbeanstalk.com/web/index.php/heliosapi/products/17418",
+			"url": "http://helios-app.eu-central-1.elasticbeanstalk.com/web/index.php/heliosapi/products/20795",
 			"name": "PUT:products/<id> - HTTP 200",
 			"description": "",
 			"method": "PUT",
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n    \"regnum\": \"TEST4\",\n    \"name\": \"TestName\",\n\t  \"blocked\": 0\n}"
+				"text": "{\n    \"regnum\": \"TEST4\",\n    \"name\": \"TestName\",\n\t  \"blocked\": 0,\n\t  \"price\": 0\n}"
 			},
 			"parameters": [],
 			"headers": [
@@ -1377,9 +1399,9 @@
 		{
 			"_id": "req_b360ed7269844259a52c9f811494ca6e",
 			"parentId": "fld_6e277f6590a64187be58092dad39c32f",
-			"modified": 1505306339044,
+			"modified": 1505403915159,
 			"created": 1500378921187,
-			"url": "http://localhost:8080/heliosapi/products/3833",
+			"url": "http://localhost:8080/heliosapi/products/20794",
 			"name": "GET:products/<id> - HTTP 200",
 			"description": "",
 			"method": "GET",
@@ -1411,7 +1433,7 @@
 		{
 			"_id": "req_953f876d0bae4f3c9e8494d3e87ba9e7",
 			"parentId": "fld_6e277f6590a64187be58092dad39c32f",
-			"modified": 1500737139294,
+			"modified": 1505403055174,
 			"created": 1500567020614,
 			"url": "http://localhost:8080/heliosapi/products",
 			"name": "POST:products - HTTP 201",
@@ -1419,7 +1441,7 @@
 			"method": "POST",
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n\t\t\"group\": \"345\",\n    \"regnum\": \"TEST5\",\n    \"name\": \"TestName\"\n}"
+				"text": "{\n\t\t\"group\": \"345\",\n    \"regnum\": \"TEST9\",\n    \"name\": \"TestName\",\n\t\t\"price\": 100,\n\t\t\"goodskind\": 7\n}"
 			},
 			"parameters": [],
 			"headers": [
@@ -1489,15 +1511,15 @@
 		{
 			"_id": "req_e195550f041541a8a2ae30d7293bec92",
 			"parentId": "fld_6e277f6590a64187be58092dad39c32f",
-			"modified": 1500737649801,
+			"modified": 1505404100096,
 			"created": 1500736560809,
-			"url": "http://localhost:8080/heliosapi/products/17418",
+			"url": "http://localhost:8080/heliosapi/products/20794",
 			"name": "PUT:products/<id> - HTTP 200",
 			"description": "",
 			"method": "PUT",
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n    \"regnum\": \"TEST4\",\n    \"name\": \"TestName\",\n\t  \"blocked\": 0\n}"
+				"text": "{\n    \"regnum\": \"TEST9\",\n    \"name\": \"TestName\",\n\t  \"blocked\": 0,\n\t\t\"price\": 10,\n\t\t\"goodskind\": 3,\n\t\t\"donotorder\": 1\n}"
 			},
 			"parameters": [],
 			"headers": [
