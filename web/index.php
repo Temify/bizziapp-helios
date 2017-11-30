@@ -21,7 +21,7 @@ else
     $app['env'] = 'prod';
 
 //Debug
-$app['debug'] = false; //TODO: for production set to false + set from environment variable
+$app['debug'] = true; //TODO: for production set to false + set from environment variable
 if(getenv('DEBUG'))
     $app['debug'] = true;
 
