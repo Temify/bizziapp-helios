@@ -101,12 +101,21 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 'TCZ.AdrTrvPopCislo',
                 'TCZ.AdrTrvMisto',
                 'TCZ.AdrTrvPSC',
-                'TCZ.AdrTrvZeme'
+                'TCZ.AdrTrvZeme',
+                'TSO.OdHodnoty',
+                'TSO.Sleva',
+                'TSO.DruhSlevy',
+                'TCOE._cas_okno_od',
+                'TCOE._cas_okno_do',
+                'TCOE._2_cas_okno_od',
+                'TCOE._2_cas_okno_do'
             );
 
 
             // Responsible person
             $qb->leftJoin('TCO', 'TabCisZam', 'TCZ', 'TCO.OdpOs = TCZ.ID');
+            $qb->leftJoin('TCO', 'TabCisOrg_EXT', 'TCOE', 'TCO.ID = TCOE.ID');
+            $qb->leftJoin('TCO', 'TabSlOrg', 'TSO', 'TSO.CisloOrg = TCO.CisloOrg');
 
             // Limit from
             if (!empty($inputParams['listfrom']))
@@ -186,6 +195,14 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->responsibleperson->city = $row['AdrTrvMisto'];
                 $newRow->responsibleperson->zip = $row['AdrTrvPSC'];
                 $newRow->responsibleperson->country = $row['AdrTrvZeme'];
+                $newRow->discount->type = $row['DruhSlevy'];
+                $newRow->discount->fromvalue = $row['OdHodnoty'];
+                $newRow->discount->value = $row['Sleva'];
+
+                $newRow->timeframe->from1 = $row['_casove_okno_od'];
+                $newRow->timeframe->to1 = $row['_casove_okno_do'];
+                $newRow->timeframe->from2 = $row['_2_casove_okno_od'];
+                $newRow->timeframe->to2 = $row['_2_casove_okno_do'];
 
                 $contactReferences[(int)$row['ID']] = ['email' => [], 'phone' => [], 'website' => []];
                 $newRow->email = &$contactReferences[(int)$row['ID']]['email'];
@@ -488,7 +505,25 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             $result = $app['db']->insert('TabCisOrg', $sqlParams);
             $newClientId = $app['db']->lastInsertId();
 
-            // If exactly 1 row was affected            
+            $sqlParamsExt = Array('ID' =>$newClientId);
+            if($inputParams['timeFrameFrom1'] != null)
+                $sqlParamsExt['_cas_okno_od'] =$inputParams['timeFrameFrom1'];
+
+            if($inputParams['timeFrameFrom2'] != null)
+                $sqlParamsExt['_2_cas_okno_od'] =$inputParams['timeFrameFrom2'];
+
+            if($inputParams['timeFrameTo1'] != null)
+                $sqlParamsExt['_cas_okno_do'] =$inputParams['timeFrameTo1'];
+
+            if($inputParams['timeFrameTo2'] != null)
+                $sqlParamsExt['_2_cas_okno_do'] =$inputParams['timeFrameTo2'];
+
+            if(count($sqlParamsExt) > 2)
+                $app['db']->insert('TabCisOrg_EXT', $sqlParamsExt);
+
+
+
+            // If exactly 1 row was affected
             if ($result === 1)
                 $app['db']->commit();
             else {
@@ -609,7 +644,25 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             $app['db']->beginTransaction();
             $result = $app['db']->update('TabCisOrg', $sqlParams, array('ID' => $id));
 
-            // If exactly 1 row was affected            
+            $sqlParamsExt = Array();
+            if($inputParams['timeFrameFrom1'] != null)
+                $sqlParamsExt['_cas_okno_od'] =$inputParams['timeFrameFrom1'];
+
+            if($inputParams['timeFrameFrom2'] != null)
+                $sqlParamsExt['_2_cas_okno_od'] =$inputParams['timeFrameFrom2'];
+
+            if($inputParams['timeFrameTo1'] != null)
+                $sqlParamsExt['_cas_okno_do'] =$inputParams['timeFrameTo1'];
+
+            if($inputParams['timeFrameTo2'] != null)
+                $sqlParamsExt['_2_cas_okno_do'] =$inputParams['timeFrameTo2'];
+
+            if(count($sqlParamsExt) > 0)
+                $app['db']->update('TabCisOrg_EXT', $sqlParamsExt, array('ID' => $id));
+
+
+
+            // If exactly 1 row was affected
             if ($result === 1)
                 $app['db']->commit();
             else {
@@ -653,7 +706,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             $app['db']->beginTransaction();
             $result = $app['db']->update('TabCisOrg', array('Stav' => 1), array('ID' => $id));
 
-            // If exactly 1 row was affected            
+            // If exactly 1 row was affected
             if ($result === 1)
                 $app['db']->commit();
             else {
@@ -967,7 +1020,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             $result = $app['db']->insert('TabKontakty', $sqlParams);
             $newContactId = $app['db']->lastInsertId();
 
-            // If exactly 1 row was affected            
+            // If exactly 1 row was affected
             if ($result === 1)
                 $app['db']->commit();
             else {
@@ -1056,7 +1109,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             $app['db']->beginTransaction();
             $result = $app['db']->update('TabKontakty', $sqlParams, array('ID' => $id));
 
-            // If exactly 1 row was affected            
+            // If exactly 1 row was affected
             if ($result === 1)
                 $app['db']->commit();
             else {
@@ -1098,7 +1151,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             $app['db']->beginTransaction();
             $result = $app['db']->delete('TabKontakty', array('ID' => $id));
 
-            // If exactly 1 row was affected            
+            // If exactly 1 row was affected
             if ($result === 1)
                 $app['db']->commit();
             else {
@@ -1998,7 +2051,7 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             $app['db']->beginTransaction();
             $result = $app['db']->update('TabKmenZbozi', array('Blokovano' => 1), array('ID' => $id));
 
-            // If exactly 1 row was affected            
+            // If exactly 1 row was affected
             if ($result === 1)
                 $app['db']->commit();
             else {
