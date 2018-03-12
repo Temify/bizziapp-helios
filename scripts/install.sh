@@ -1,17 +1,13 @@
 #!/bin/bash
-wget https://github.com/EreMaijala/unixODBC/raw/master/RPMS/unixODBC-2.3.4-1.el7.x86_64.rpm
-wget https://github.com/EreMaijala/unixODBC/raw/master/RPMS/unixODBC-devel-2.3.4-1.el7.x86_64.rpm
 sudo yum -y remove unixODBC
-sudo rpm -i unixODBC-2.3.4-1.el7.x86_64.rpm
-sudo rpm -i unixODBC-devel-2.3.4-1.el7.x86_64.rpm
-sudo yum -y install php71-odbc
-sudo yum install php71-pdo php71-xml php7-pear php71-devel re2c gcc-c++ gcc
+sudo yum -y install php71-pdo php71-xml php7-pear php71-devel re2c gcc-c++ gcc
 sudo su
 curl https://packages.microsoft.com/config/rhel/7/prod.repo > /etc/yum.repos.d/mssql-release.repo
 exit
-sudo yum -y update
-sudo yum -y remove unixODBC-utf16-devel
-sudo ACCEPT_EULA=Y yum -y install msodbcsql mssql-tools
+sudo yum update
+sudo ACCEPT_EULA=Y yum -y install msodbcsql-13.0.1.0-1 mssql-tools-14.0.2.0-1
+sudo yum -y install php71-odbc
+sudo yum -y install unixODBC-utf16-devel
 echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bash_profile
 echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
 sudo su
