@@ -117,6 +117,10 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
             $qb->leftJoin('TCO', 'TabCisOrg_EXT', 'TCOE', 'TCO.ID = TCOE.ID');
             $qb->leftJoin('TCO', 'TabSlOrg', 'TSO', 'TSO.CisloOrg = TCO.CisloOrg');
 
+            if (isset($inputParams['timeframe_from_1']) && (!empty($inputParams['timeframe_from_1']) || $inputParams['timeframe_from_1'] == '0')){
+                $qb->andWhere('TCOE._cas_okno_od IS NOT NULL');
+            }
+
             // Limit from
             if (!empty($inputParams['listfrom']))
                 if (is_numeric($inputParams['listfrom']))
@@ -1390,8 +1394,8 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                     $newRow->vintage = null;
                 $newRow->blocked = (int)$row['Blokovano'];
 
-                $tmpBeznySklad = (!empty($row['BeznySklad'])) ? explode('/', $row['BeznySklad']) : ['', '', '', ''];
-                $tmpDanovySklad = (!empty($row['DanovySklad'])) ? explode('/', $row['DanovySklad']) : ['', '', '', ''];
+                $tmpBeznySklad = (!empty($row['BeznySklad'])) ? explode('/', $row['BeznySklad']) : ['', '', '', '', ''];
+                $tmpDanovySklad = (!empty($row['DanovySklad'])) ? explode('/', $row['DanovySklad']) : ['', '', '', '', ''];
 
                 $newRow->storages[] = [
                     'storageid' => (int)3,
@@ -1402,11 +1406,11 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
 
                 $newRow->storages[] = [
                     'storageid' => (int)6,
-                    'quantityavailable' => intval($tmpBeznySklad[0]) - intval($tmpBeznySklad[2]) - intval($tmpBeznySklad[4]),
-                    'quantitytoreceive' => intval($tmpBeznySklad[1]),
-                    'quantityordered' => intval($tmpBeznySklad[3])
+                    'quantityavailable' => intval($tmpDanovySklad[0]) - intval($tmpDanovySklad[2]) - intval($tmpDanovySklad[4]),
+                    'quantitytoreceive' => intval($tmpDanovySklad[1]),
+                    'quantityordered' => intval($tmpDanovySklad[3])
                 ];
-                $newRow->orderdate = array_key_exists($row['id'], $orderDates) ? $orderDates[$row['id']] : null;
+                $newRow->orderdate = array_key_exists($row['ID'], $orderDates) ? $orderDates[$row['ID']] : null;
                 $newRow->donotorder = (int)$row['_Neobjednavat'];
                 $newRow->goodskind = (int)$row['_DruhVina'];
                 $newRow->ivk = (int)$row['_IVK'];
