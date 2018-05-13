@@ -203,10 +203,10 @@ class HeliosAPIControllerProvider implements ControllerProviderInterface
                 $newRow->discount->fromvalue = $row['OdHodnoty'];
                 $newRow->discount->value = $row['Sleva'];
 
-                $newRow->timeframe->from1 = $row['_casove_okno_od'];
-                $newRow->timeframe->to1 = $row['_casove_okno_do'];
-                $newRow->timeframe->from2 = $row['_2_casove_okno_od'];
-                $newRow->timeframe->to2 = $row['_2_casove_okno_do'];
+                $newRow->timeframe->from1 = $row['_cas_okno_od'];
+                $newRow->timeframe->to1 = $row['_cas_okno_do'];
+                $newRow->timeframe->from2 = $row['_2_cas_okno_od'];
+                $newRow->timeframe->to2 = $row['_2_cas_okno_do'];
 
                 $contactReferences[(int)$row['ID']] = ['email' => [], 'phone' => [], 'website' => []];
                 $newRow->email = &$contactReferences[(int)$row['ID']]['email'];
